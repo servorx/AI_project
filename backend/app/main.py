@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.routers import chat, whatsapp
+from app.routes import chat, whatsapp
 from app.config import settings
 
 app = FastAPI(

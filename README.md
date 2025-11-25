@@ -42,7 +42,8 @@ code .
 2. Crea el entorno de desarrollo: 
 ```bash
 cd backend  
-python3 -m venv venv
+python3 -m venv .venv
+source .venv/bin/activate
 ```
 
 3 . Ejecuta el siguiente comando para instalar los paquetes necesarios:
@@ -52,3 +53,16 @@ pip install -r requirements.txt
 ```
 
 Esto instalará todos los paquetes necesarios para ejecutar el proyecto.
+Ahora, para ejecutar el proyecto, sigue estos pasos:
+
+4. Ejecuta el siguiente comando para iniciar el servidor de FastAPI:
+
+```bash
+uvicorn app.main:app --reload
+```
+
+5. Abre un navegador web y acceda a la URL http://127.0.0.1:8000/docs para acceder a la documentación de la API.
+
+6. Para iniciar el cliente de la aplicación, abre un navegador web y acceda a la URL http://127.0.0.1:5173.
+
+7. En el cliente, ingresa el nombre de usuario y contraseña para acceder a la aplicación.
