@@ -1,55 +1,60 @@
 import asyncio
-from typing import List
 from app.prompts.system_prompt import SYSTEM_PROMPT
 from app.services.rag_service import RAGService
 from app.dependencies.gemini_client import GeminiClient
-
-DEFAULT_K = 3
+from app.services.memory_service import MemoryService
 
 class CommercialAgent:
-    def __init__(self, gemini_client: GeminiClient = None, rag: RAGService = None):
+    def __init__(self, session_id: str, gemini_client: GeminiClient = None, rag: RAGService = None):
+        self.session_id = session_id
         self.gemini = gemini_client or GeminiClient()
         self.rag = rag or RAGService(self.gemini)
 
-    async def _build_prompt(self, user_message: str, retrieved_docs: List[dict]) -> str:
-        # unir contexto
+    async def _build_prompt(self, user_message: str, retrieved_docs):
+
+        # 1. recuperar memoria
+        memory = MemoryService.get_memory(self.session_id)
+        memory_block = "\n".join([f"{m['role'].upper()}: {m['text']}" for m in memory])
+
+        # 2. contexto por RAG
         ctx_parts = []
-        for i, doc in enumerate(retrieved_docs, start=1):
-            txt = doc.get("text") or doc.get("payload", {}).get("text", "")
-            score = doc.get("score")
-            ctx_parts.append(f"[DOC {i} | score={score}]\n{txt}\n")
+        for d in retrieved_docs:
+            ctx_parts.append(d.get("text") or d["payload"].get("text", ""))
 
-        kb_context = "\n".join(ctx_parts) if ctx_parts else "No hay contexto relevante en KB."
+        kb_context = "\n---\n".join(ctx_parts) if ctx_parts else "No hay contexto relevante en KB."
 
+        # 3. construir prompt completo
         prompt = f"""
 {SYSTEM_PROMPT}
 
-CONTEXT (del KB, usa SOLO si es relevante):
+CONVERSACIÓN PREVIA:
+{memory_block}
+
+CONTEXT (RAG):
 {kb_context}
 
-INSTRUCCIONES:
-- Responde en español neutro (Colombia).
-- Sé claro y conciso, orientado a ayudar y vender sin presionar.
-- Siempre prioriza la información del CONTEXT si está disponible.
-- Si la KB no contiene la respuesta o hay ambigüedad, pide más datos al usuario (p.ej.: modelo buscado, presupuesto, uso).
-- No inventes datos ni precios. Si no sabes, dilo claramente y ofrece pedir más información.
-
-USUARIO:
+USER:
 {user_message}
 
-RESPUESTA:
+ASSISTANT:
 """
+
         return prompt
 
-    async def run(self, message: str, top_k: int = DEFAULT_K) -> str:
-        # Recuperar contexto (RAG)
-        docs = await self.rag.retrieve(message, top_k=top_k)
+    async def run(self, message: str):
+        # guardar mensaje del usuario en memoria
+        MemoryService.add_message(self.session_id, "user", message)
 
-        # Construir prompt
+        # recuperar contexto
+        docs = await self.rag.retrieve(message)
+
+        # construir prompt
         prompt = await self._build_prompt(message, docs)
 
-        # Llamar a Gemini para generar respuesta
-        # usa temperatura baja para respuestas concretas
-        response = await self.gemini.generate_text(prompt, max_tokens=512, temperature=0.0)
-        # opcional: post-process (trim, seguridad)
-        return response.strip()
+        # LLM
+        response = await self.gemini.generate_text(prompt)
+
+        # guardar respuesta en memoria
+        MemoryService.add_message(self.session_id, "assistant", response)
+
+        return response

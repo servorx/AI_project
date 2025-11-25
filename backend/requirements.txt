@@ -1,17 +1,8 @@
 # Langchain
 # TODO: revisar y evaluar si todas las dependencias son necesarias
-# langgraph
-# langgraph-prebuilt
-# langgraph-sdk
-# langgraph-checkpoint-mysql
-# langsmith
-# langchain-community
-# langchain-core
 langchain-google-genai
-# notebook
-# langchain-tavily
-# trustcall
 langgraph-cli[inmem]
+langchain
 
 # FastAPI backend
 fastapi
@@ -22,6 +13,7 @@ langroid
 google-generativeai
 python-dotenv
 httpx
+asyncio
 
 # Database (Qdrant)
 qdrant-client
