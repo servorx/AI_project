@@ -22,6 +22,12 @@ class Settings(BaseSettings):
     LANGSMITH_PROJECT: str = Field(default="langroid-ai-project", description="Project name for Langroid")
     TAVILY_API_KEY: str = Field(..., description="API Key for Langroid")
 
+    # MySQL
+    MYSQL_USER: str = Field(..., description="User for MySQL")
+    MYSQL_PASSWORD: str = Field(..., description="Password for MySQL")
+    MYSQL_HOST: str = Field(..., description="Host for MySQL")
+    MYSQL_PORT: str = Field(..., description="Port for MySQL")
+    MYSQL_DB: str = Field(..., description="Database for MySQL")
     # Sistema general
     # DEBUG: bool = Field(default=True)
 
