@@ -26,7 +26,7 @@ export default function ChatBubble({ m }: { m: Message }) {
       {/* Hora */}
       <div
         className={`
-          text-[10px] mt-2 
+          text-xs mt-2 
           ${isUser ? "text-background/80" : "text-text-secondary"}
         `}
       >

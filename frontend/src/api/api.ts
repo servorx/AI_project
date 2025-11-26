@@ -1,4 +1,6 @@
 import axios from "axios";
+// importar los types 
+import type { ConversationItem } from "./types/Conversation";
 
 export const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:8000";
 
@@ -75,5 +77,10 @@ export async function getMessages(
   const res = await api.get("/admin/messages", {
     params: { conversation_id: conversationId },
   });
+  return res.data;
+}
+
+export async function getRecommendations() {
+  const res = await api.get("/recommendations");
   return res.data;
 }

@@ -6,14 +6,20 @@ import type { Message } from "../types/Message";
 import Skeleton from "../components/Skeleton";
 
 export default function AdminLayout() {
-const [conversations, setConversations] = useState<Conversation[]>([]);
-const [messages, setMessages] = useState<Message[]>([]);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [selected, setSelected] = useState<number | null>(null);
+  const [loading, setLoading] = useState(false);
 
   async function loadMsgs(id: number) {
-    const data = await getMessages(id);
+    setLoading(true); // empieza el skeleton
     setSelected(id);
+    setMessages([]); // limpiar mensajes mientras llegan
+
+    const data = await getMessages(id);
+
     setMessages(data.items || []);
+    setLoading(false);  // termina el skeleton
   }
 
   useEffect(() => {
@@ -71,10 +77,11 @@ const [messages, setMessages] = useState<Message[]>([]);
             Selecciona una conversación
           </p>
         )}
+        {/* muestra el skeleton mientras carga */}
+        {loading && <Skeleton lines={4} />} 
 
-        {messages.map((m) => {
+        {!loading && messages.map((m) => {
           const isAssistant = m.role === "assistant";
-
           return (
             <motion.div
               key={m.id}
@@ -92,7 +99,6 @@ const [messages, setMessages] = useState<Message[]>([]);
               <div className="text-xs text-text-secondary">
                 {/* se maneja el caso de que el mensaje no tenga fecha de creacion */}
                 {m.role} • {(m.created_at ? new Date(m.created_at).toLocaleString() : "—")}
-
               </div>
 
               <div className="mt-2 whitespace-pre-line text-text-primary">

@@ -37,3 +37,34 @@ class RAGService:
                 "text": text,
             })
         return results
+    async def get_recommendations():
+        # RAG real si quieres, o datos base desde tu colección
+        products = [
+        {
+            "id": 1,
+            "name": "Keychron K6",
+            "desc": "Teclado 65% ideal para programar, compacto y hot‑swap.",
+            "price": 89,
+            "switch": "Brown",
+            "image": "/static/k6.png"
+        },
+        {
+            "id": 2,
+            "name": "Royal Kludge RK84",
+            "desc": "TKL inalámbrico, excelente calidad/precio.",
+            "price": 65,
+            "switch": "Red",
+            "image": "/static/rk84.png"
+        }
+        ]
+        guides = [
+        {
+            "title": "¿Qué es un switch?",
+            "content": "Es el mecanismo debajo de cada tecla que define la sensación al escribir."
+        },
+        {
+            "title": "Formatos de teclado",
+            "content": "Full‑size, TKL, 75%, 65%, 60%. Cada uno elimina secciones para ahorrar espacio."
+        }
+        ]
+        return {"products": products, "guides": guides}

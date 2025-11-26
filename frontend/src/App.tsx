@@ -21,7 +21,18 @@ export default function App() {
   return (
     <div className="h-screen flex flex-col bg-background">
       <NavBar page={page} setPage={setPage} />
-      {page === "chat" ? <ChatLayout sessionId={sessionId} /> : <AdminLayout />}    
+
+      <AnimatePresence mode="wait">
+        {page === "chat" ? (
+          <PageTransition key="chat">
+            <ChatLayout sessionId={sessionId} />
+          </PageTransition>
+        ) : (
+          <PageTransition key="admin">
+            <AdminLayout />
+          </PageTransition>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

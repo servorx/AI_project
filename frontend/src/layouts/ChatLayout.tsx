@@ -4,7 +4,8 @@ import { timeNowISO } from "../utils/Time";
 import { postChatMessage } from "../api/api";
 import { AnimatePresence, motion } from "framer-motion";
 import type { Message } from "../types/Message";
-import Loader from "../components/Loader";
+import Sidebar from "../components/Sidebar";
+import InputChat from "../components/InputChat";
 
 interface Props {
   sessionId: string;
@@ -20,7 +21,6 @@ export default function ChatLayout({ sessionId }: Props) {
   ]);
 
   const [input, setInput] = useState("");
-  const [loading, setLoading] = useState(false);
   const scrollerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -85,67 +85,35 @@ export default function ChatLayout({ sessionId }: Props) {
         </p>
       </motion.div>
 
-      {/* CHAT SCROLLER ================================= */}
-      <div
-        ref={scrollerRef}
-        className="flex-1 overflow-auto p-6 space-y-4 bg-background"
-      >
-        <AnimatePresence mode="popLayout">
-          {messages.map((m, i) => (
-            <ChatBubble key={i} m={m} />
-          ))}
-        </AnimatePresence>
-
-        {loading && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="text-secondary text-sm"
-          >
-            El asistente está escribiendo…
-          </motion.div>
-        )}
-      </div>
-
-      {/* INPUT AREA ================================= */}
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          sendMessage(input);
-        }}
-        className="p-4 border-t border-border bg-surface flex gap-3"
-      >
-        <input
-          className="
-            flex-1 
-            bg-background 
-            border border-border 
-            rounded-md px-3 py-2 
-            text-text-primary
-            placeholder-text-secondary
-            focus:ring-2 focus:ring-primary 
-            duration-200
-          "
-          placeholder="Escribe tu mensaje…"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          disabled={loading}
-        />
-
-        <motion.button
-          whileTap={{ scale: 0.95 }}
-          whileHover={{ scale: 1.03 }}
-          disabled={loading}
-          className="
-            bg-primary] 
-            text-white 
-            px-4 py-2 rounded-md 
-            shadow-md disabled:opacity-50
-          "
+      {/* CONTENEDOR GENERAL: CHAT (70%) + SIDEBAR (30%) */}
+      <div className="flex flex-1 overflow-hidden">
+        {/* CHAT */}
+        <div
+          ref={scrollerRef}
+          className="flex-1 overflow-auto p-6 space-y-4 bg-background"
         >
-          {loading ? <Loader /> : "Enviar"}
-        </motion.button>
-      </form>
+          <AnimatePresence mode="popLayout">
+            {messages.map((m, i) => (
+              <ChatBubble key={i} m={m} />
+            ))}
+          </AnimatePresence>
+
+          {loading && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="text-secondary text-sm"
+            >
+              El asistente está escribiendo…
+            </motion.div>
+          )}
+        </div>
+
+        {/* SIDEBAR */}
+        <Sidebar />
+      </div>
+      {/* INPUT, se coloca afuera del sidebar para que se mantenga centrado */}
+      <InputChat />
     </div>
   );
 }

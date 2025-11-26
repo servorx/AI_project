@@ -18,14 +18,14 @@ export default function NavBar({ page, setPage }: Props) {
       initial={{ opacity: 0, y: -150 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.75, ease: "easeOut" }}
-      className="bg-surface border-b border-border px-4 py-3 flex items-center justify-between"
+      className="bg-surface border-b border-border px-5 py-5 flex items-center justify-between"
     >
       {/* lado izquierdo */}
       <div className="flex items-center gap-3">
         <motion.div
           whileHover={{ scale: 1.2 }}
           transition={{ type: "spring", stiffness: 250, damping: 12 }}
-          className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-text-primary font-bold shadow-lg"
+          className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-text-primary font-bold shadow-lg cursor-pointer"
         >
           AC
         </motion.div>
@@ -41,7 +41,7 @@ export default function NavBar({ page, setPage }: Props) {
       </div>
 
       {/* lado derecho de lso botones */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-8">
         {navItems.map((item) => {
           const active = page === item.id;
 
@@ -52,7 +52,7 @@ export default function NavBar({ page, setPage }: Props) {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.97 }}
               transition={{ duration: 0.15 }}
-              className={`px-4 py-2 rounded-lg font-medium transition 
+              className={`px-4 py-2 rounded-lg font-medium transition cursor-pointer
                 ${
                   active
                     ? "bg-primary/20 text-primary shadow-sm"
