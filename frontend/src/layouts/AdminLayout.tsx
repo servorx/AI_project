@@ -3,8 +3,8 @@ import { getConversations, getMessages } from "../api/api";
 import { motion } from "framer-motion";
 
 export default function AdminLayout() {
-  const [conversations, setConversations] = useState<any[]>([]);
-  const [messages, setMessages] = useState<any[]>([]);
+  const [conversations, setConversations] = useState<unknown[]>([]);
+  const [messages, setMessages] = useState<unknown[]>([]);
   const [selected, setSelected] = useState<number | null>(null);
 
   async function loadConvs() {
