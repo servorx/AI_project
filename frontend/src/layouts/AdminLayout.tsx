@@ -3,6 +3,7 @@ import { getConversations, getMessages } from "../api/api";
 import { motion } from "framer-motion";
 import type { Conversation } from "../types/Conversation";
 import type { Message } from "../types/Message";
+import Skeleton from "../components/Skeleton";
 
 export default function AdminLayout() {
 const [conversations, setConversations] = useState<Conversation[]>([]);

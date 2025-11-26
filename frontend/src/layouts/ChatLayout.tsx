@@ -4,6 +4,7 @@ import { timeNowISO } from "../utils/Time";
 import { postChatMessage } from "../api/api";
 import { AnimatePresence, motion } from "framer-motion";
 import type { Message } from "../types/Message";
+import Loader from "../components/Loader";
 
 interface Props {
   sessionId: string;
@@ -142,7 +143,7 @@ export default function ChatLayout({ sessionId }: Props) {
             shadow-md disabled:opacity-50
           "
         >
-          {loading ? "Enviando…" : "Enviar"}
+          {loading ? <Loader /> : "Enviar"}
         </motion.button>
       </form>
     </div>

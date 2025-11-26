@@ -2,6 +2,9 @@ import { useState } from "react";
 import NavBar from "./components/NavBar";
 import ChatLayout from "./layouts/ChatLayout";
 import AdminLayout from "./layouts/AdminLayout";
+// parte de las animaciones 
+import { AnimatePresence } from "framer-motion";
+import PageTransition from "./components/PageTransition";
 
 const DEFAULT_SESSION_ID = () => `web_${Math.random().toString(36).slice(2, 9)}`;
 
