@@ -1,9 +1,24 @@
-import './index.css'
+import { useState } from "react";
+import NavBar from "./components/NavBar";
+import ChatLayout from "./layouts/ChatLayout";
+import AdminLayout from "./layouts/AdminLayout";
 
-function App() {
+const DEFAULT_SESSION_ID = () => `web_${Math.random().toString(36).slice(2, 9)}`;
+
+export default function App() {
+  const [page, setPage] = useState("chat");
+  const [sessionId] = useState(() => {
+    const stored = localStorage.getItem("ac_session_id");
+    if (stored) return stored;
+    const id = DEFAULT_SESSION_ID();
+    localStorage.setItem("ac_session_id", id);
+    return id;
+  });
+
   return (
-    <div className=''></div>
-  )
+    <div className="h-screen flex flex-col">
+      <NavBar page={page} setPage={setPage} />
+      {page === "chat" ? <ChatLayout sessionId={sessionId} /> : <AdminLayout />}    
+    </div>
+  );
 }
-
-export default App
