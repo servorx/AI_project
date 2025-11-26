@@ -11,3 +11,16 @@
   --color-text-secondary: #AFAFAF; /* texto secundario, gris medio */
   --color-border: #2A2A2E; /* color de borde, gris medio fuerte */
 }
+
+/* esto es para poder colocar como fuente global el font de Roboto Mono */
+@font-face {
+  font-family: "RobotoMono";
+  src: url("/static/fonts/RobotoMono-Regular.woff2") format("woff2");
+  font-display: swap;
+  font-weight: 400;
+  font-style: normal;
+}
+
+body {
+  font-family: "RobotoMono", monospace;
+}

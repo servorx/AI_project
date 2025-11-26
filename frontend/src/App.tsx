@@ -16,7 +16,7 @@ export default function App() {
   });
 
   return (
-    <div className="h-screen flex flex-col">
+    <div className="h-screen flex flex-col bg-background">
       <NavBar page={page} setPage={setPage} />
       {page === "chat" ? <ChatLayout sessionId={sessionId} /> : <AdminLayout />}    
     </div>

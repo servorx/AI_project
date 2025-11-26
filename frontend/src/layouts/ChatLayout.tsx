@@ -57,27 +57,29 @@ export default function ChatLayout({ sessionId }: Props) {
         ...s,
         {
           role: "assistant",
-          content: "Error de servidor.",
+          content: "Error de servidor. Intenta de nuevo.",
           created_at: timeNowISO(),
         },
       ]);
+      // muestra el error en la consola
+      console.error("[ERROR] Error de servidor:", err);
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-[--color-background] text-[--color-text-primary]">
-      {/* HEADER ================================= */}
+    <div className="flex-1 flex flex-col h-full bg-background text-text-primary">
+      {/* HEADER */}
       <motion.div
         initial={{ y: -12, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="px-6 py-4 border-b border-[--color-border] bg-[--color-surface]"
+        className="px-6 py-4 border-b border-border bg-surface"
       >
-        <h2 className="text-lg font-semibold text-[--color-text-primary]">
+        <h2 className="text-lg font-semibold text-text-primary">
           Chat con el Asistente
         </h2>
-        <p className="text-sm text-[--color-text-secondary]">
+        <p className="text-sm text-text-secondary">
           Sesión: <span className="font-mono">{sessionId}</span>
         </p>
       </motion.div>
@@ -85,7 +87,7 @@ export default function ChatLayout({ sessionId }: Props) {
       {/* CHAT SCROLLER ================================= */}
       <div
         ref={scrollerRef}
-        className="flex-1 overflow-auto p-6 space-y-4 bg-[--color-background]"
+        className="flex-1 overflow-auto p-6 space-y-4 bg-background"
       >
         <AnimatePresence mode="popLayout">
           {messages.map((m, i) => (
@@ -97,7 +99,7 @@ export default function ChatLayout({ sessionId }: Props) {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="text-[--color-secondary] text-sm"
+            className="text-secondary text-sm"
           >
             El asistente está escribiendo…
           </motion.div>
@@ -110,17 +112,17 @@ export default function ChatLayout({ sessionId }: Props) {
           e.preventDefault();
           sendMessage(input);
         }}
-        className="p-4 border-t border-[--color-border] bg-[--color-surface] flex gap-3"
+        className="p-4 border-t border-border bg-surface flex gap-3"
       >
         <input
           className="
             flex-1 
-            bg-[--color-background] 
-            border border-[--color-border] 
+            bg-background 
+            border border-border 
             rounded-md px-3 py-2 
-            text-[--color-text-primary]
-            placeholder-[--color-text-secondary]
-            focus:ring-2 focus:ring-[--color-primary] 
+            text-text-primary
+            placeholder-text-secondary
+            focus:ring-2 focus:ring-primary 
             duration-200
           "
           placeholder="Escribe tu mensaje…"
@@ -134,7 +136,7 @@ export default function ChatLayout({ sessionId }: Props) {
           whileHover={{ scale: 1.03 }}
           disabled={loading}
           className="
-            bg-[--color-primary] 
+            bg-primary] 
             text-white 
             px-4 py-2 rounded-md 
             shadow-md disabled:opacity-50
