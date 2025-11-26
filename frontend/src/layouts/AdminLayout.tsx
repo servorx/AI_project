@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { getConversations, getMessages } from "../api/api";
 import { motion } from "framer-motion";
-import type { Conversation } from "../types/Conversation";
+import type { ConversationItem } from "../types/api/ConversationItem";
 import type { Message } from "../types/Message";
 import Skeleton from "../components/Skeleton";
 
 export default function AdminLayout() {
-  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [conversations, setConversations] = useState<ConversationItem[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [selected, setSelected] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);

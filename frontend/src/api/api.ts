@@ -1,6 +1,8 @@
 import axios from "axios";
 // importar los types 
-import type { ConversationItem } from "./types/Conversation";
+import type { ConversationItem } from "../types/api/ConversationItem";
+import type { ChatResponse } from "../types/api/ChatResponse";
+import type { MessageItem } from "../types/api/MessageItem";
 
 export const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:8000";
 
@@ -33,26 +35,6 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
-
-// estas son las interfaces de los tipos de datos que se esperan de la API
-export interface ChatResponse {
-  response: string;
-}
-
-export interface ConversationItem {
-  id: number;
-  created_at: string;
-  session_id?: string;
-  user_phone?: string;
-}
-
-export interface MessageItem {
-  id: number;
-  conversation_id: number;
-  role: "user" | "assistant" | "system";
-  content: string;
-  created_at: string;
-}
 
 // estas son las funciones de la API
 export async function postChatMessage(

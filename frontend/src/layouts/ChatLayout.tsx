@@ -3,9 +3,9 @@ import ChatBubble from "../components/ChatBubble";
 import { timeNowISO } from "../utils/Time";
 import { postChatMessage } from "../api/api";
 import { AnimatePresence, motion } from "framer-motion";
-import type { Message } from "../types/Message";
 import Sidebar from "../components/Sidebar";
 import InputChat from "../components/InputChat";
+import type { Message } from "../types/Message";
 
 interface Props {
   sessionId: string;
@@ -21,6 +21,8 @@ export default function ChatLayout({ sessionId }: Props) {
   ]);
 
   const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
+
   const scrollerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -30,12 +32,12 @@ export default function ChatLayout({ sessionId }: Props) {
     });
   }, [messages]);
 
-  async function sendMessage(text: string) {
-    if (!text.trim()) return;
+  async function sendMessage() {
+    if (!input.trim()) return;
 
     const userMsg: Message = {
       role: "user",
-      content: text,
+      content: input,
       created_at: timeNowISO(),
     };
 
@@ -44,7 +46,7 @@ export default function ChatLayout({ sessionId }: Props) {
     setLoading(true);
 
     try {
-      const data = await postChatMessage(sessionId, text);
+      const data = await postChatMessage(sessionId, input);
 
       const botMsg: Message = {
         role: "assistant",
@@ -54,6 +56,8 @@ export default function ChatLayout({ sessionId }: Props) {
 
       setMessages((s) => [...s, botMsg]);
     } catch (err) {
+      console.error("[ERROR]", err);
+
       setMessages((s) => [
         ...s,
         {
@@ -62,8 +66,6 @@ export default function ChatLayout({ sessionId }: Props) {
           created_at: timeNowISO(),
         },
       ]);
-      // muestra el error en la consola
-      console.error("[ERROR] Error de servidor:", err);
     } finally {
       setLoading(false);
     }
@@ -71,6 +73,7 @@ export default function ChatLayout({ sessionId }: Props) {
 
   return (
     <div className="flex-1 flex flex-col h-full bg-background text-text-primary">
+
       {/* HEADER */}
       <motion.div
         initial={{ y: -12, opacity: 0 }}
@@ -85,7 +88,7 @@ export default function ChatLayout({ sessionId }: Props) {
         </p>
       </motion.div>
 
-      {/* CONTENEDOR GENERAL: CHAT (70%) + SIDEBAR (30%) */}
+      {/* CONTENEDOR GENERAL (Chat + Sidebar) */}
       <div className="flex flex-1 overflow-hidden">
         {/* CHAT */}
         <div
@@ -112,8 +115,14 @@ export default function ChatLayout({ sessionId }: Props) {
         {/* SIDEBAR */}
         <Sidebar />
       </div>
-      {/* INPUT, se coloca afuera del sidebar para que se mantenga centrado */}
-      <InputChat />
+
+      {/* INPUTCHAT COMPONENT */}
+      <InputChat
+        input={input}
+        setInput={setInput}
+        loading={loading}
+        onSend={sendMessage}
+      />
     </div>
   );
 }

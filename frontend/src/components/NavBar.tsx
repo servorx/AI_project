@@ -41,7 +41,7 @@ export default function NavBar({ page, setPage }: Props) {
       </div>
 
       {/* lado derecho de lso botones */}
-      <div className="flex items-center gap-8">
+      <div className="flex items-center gap-6">
         {navItems.map((item) => {
           const active = page === item.id;
 
