@@ -9,10 +9,27 @@ export default function ChatBubble({ m }: { m: Message }) {
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -6 }}
-      className={`max-w-[80%] p-3 rounded-lg my-1 ${isUser ? "bg-indigo-600 text-white ml-auto" : "bg-slate-100 text-slate-900"}`}
+      transition={{ duration: 0.25, ease: "easeOut" }}
+      className={`
+        max-w-4/5 p-3 rounded-2xl my-1 shadow-md backdrop-blur-sm 
+        ${isUser 
+          ? "bg-primary text-background ml-auto" 
+          : "bg-surface text-text-primary border border-border"
+        }
+      `}
     >
-      <div className="whitespace-pre-line">{m.content}</div>
-      <div className={`text-[10px] mt-2 ${isUser ? "text-indigo-100" : "text-slate-400"}`}>
+      {/* Texto del mensaje */}
+      <div className="whitespace-pre-line leading-relaxed">
+        {m.content}
+      </div>
+
+      {/* Hora */}
+      <div
+        className={`
+          text-[10px] mt-2 
+          ${isUser ? "text-background/80" : "text-text-secondary"}
+        `}
+      >
         {m.created_at ? new Date(m.created_at).toLocaleTimeString() : ""}
       </div>
     </motion.div>
