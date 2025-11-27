@@ -1,5 +1,3 @@
-# backend/scripts/ingest_kb.py
-
 import os
 import asyncio
 from qdrant_client import QdrantClient

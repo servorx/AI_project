@@ -37,7 +37,7 @@ def rank_products(products: List[Product], prefs: Dict[str, Any]):
         if prefs.get("format") and prefs["format"] in p.name.lower():
             score += 3
 
-        if prefs.get("switch") and prefs["switch"].lower() in p.switch.lower():
+        if prefs.get("switch") and p.switch and prefs["switch"].lower() in p.switch.lower():
             score += 2
 
         if prefs.get("budget") and p.price <= prefs["budget"]:

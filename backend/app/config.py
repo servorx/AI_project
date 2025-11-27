@@ -1,3 +1,4 @@
+from fastapi import HTTPException
 from pydantic_settings import BaseSettings
 from pydantic import Field
 
@@ -22,6 +23,11 @@ class Settings(BaseSettings):
     LANGSMITH_PROJECT: str = Field(default="langroid-ai-project", description="Project name for Langroid")
     TAVILY_API_KEY: str = Field(..., description="API Key for Langroid")
 
+    # Whatsapp
+    WHATSAPP_VERYFY_TOKEN: str = Field(..., description="Verify token for Whatsapp")
+    WHATSAPP_TOKEN = Field(..., description="Token for Whatsapp")
+    WHATSAPP_PHONE_ID = Field(..., description="Phone ID for Whatsapp")
+    
     # MySQL
     MYSQL_USER: str = Field(..., description="User for MySQL")
     MYSQL_PASSWORD: str = Field(..., description="Password for MySQL")
@@ -36,3 +42,4 @@ class Settings(BaseSettings):
         env_file_encoding = "utf-8"
 
 settings = Settings()
+

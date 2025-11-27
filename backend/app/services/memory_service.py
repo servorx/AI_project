@@ -1,7 +1,5 @@
 from collections import defaultdict, deque
 
-# Memoria en RAM (suficiente para el MVP)
-# { session_id: deque([{"role": "user/assistant", "text": "..."}, ...]) }
 CONVERSATION_MEMORY = defaultdict(lambda: deque(maxlen=6)) 
 # memoria máxima = últimos 6 mensajes
 
