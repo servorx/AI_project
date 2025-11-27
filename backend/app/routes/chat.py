@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends
-from app.models.chat import ChatRequest, ChatResponse
+from app.models.chat_model import ChatRequest, ChatResponse
 from app.services.agent_service import CommercialAgentService
 
 router = APIRouter()

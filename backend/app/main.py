@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.routes import chat, whatsapp, admin
+from app.routes import chat, whatsapp, admin, recommendation
 from app.config import settings
 
 app = FastAPI(
@@ -10,6 +10,7 @@ app = FastAPI(
 app.include_router(chat.router, prefix="/chat", tags=["chat"])
 app.include_router(whatsapp.router, prefix="/whatsapp", tags=["whatsapp"])
 app.include_router(admin.router, prefix="/admin", tags=["admin"])
+app.include_router(recommendation.router, prefix="/recommendations", tags=["recommendations"])
 
 @app.get("/health")
 def health():
