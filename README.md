@@ -61,8 +61,18 @@ Ahora, para ejecutar el proyecto, sigue estos pasos:
 uvicorn app.main:app --reload
 ```
 
-5. Abre un navegador web y acceda a la URL http://127.0.0.1:8000/docs para acceder a la documentación de la API.
+5. Ejecutar el siguiente comando para iniciar el servidor de qdrant con docker:
 
-6. Para iniciar el cliente de la aplicación, abre un navegador web y acceda a la URL http://127.0.0.1:5173.
+```bash
+docker run -p 6333:6333 -v qdrant_data:/qdrant/storage qdrant/qdrant
+```
+o 
+```bash
+docker ps
+```
 
-7. En el cliente, ingresa el nombre de usuario y contraseña para acceder a la aplicación.
+6. Abre un navegador web y acceda a la URL http://127.0.0.1:8000/docs para acceder a la documentación de la API.
+
+7. Para iniciar el cliente de la aplicación, abre un navegador web y acceda a la URL http://127.0.0.1:5173.
+
+8. En el cliente, ingresa el nombre de usuario y contraseña para acceder a la aplicación.

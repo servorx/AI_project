@@ -10,23 +10,24 @@ class RAGService:
         self.gemini = gemini or GeminiClient()
 
     async def retrieve(self, query: str, top_k: int = 3) -> List[Dict[str, Any]]:
-        # busqueda estandar de qdrant para responder mensajes con RAG
+        # busqueda estandar de qdrant para responder mensajes con RAG a traves del embedding
         embeddings = await self.gemini.embed_texts([query])
         vector = embeddings[0]
 
-        hits = self.client.search(
-            collection_name=settings.COLLECTION_NAME,
-            query_vector=vector,
+        # nuevo método de qdrant para búsquedas vectoriales
+        hits = self.client.query_points(
+            collection_name=settings.QDRANT_COLLECTION,
+            query=vector,
             limit=top_k,
-            with_payload=True,
+            with_payload=True
         )
 
         results = []
-        for h in hits:
-            payload = getattr(h, "payload", None) or h.get("payload", {})
+        for h in hits.points:
+            payload = h.payload or {}
             results.append({
-                "id": getattr(h, "id", None),
-                "score": getattr(h, "score", None),
+                "id": h.id,
+                "score": h.score,
                 "payload": payload,
                 "text": payload.get("text") or payload.get("content") or "",
             })

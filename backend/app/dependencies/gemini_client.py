@@ -1,4 +1,3 @@
-# app/dependencies/gemini_client.py (fragmento)
 import httpx
 from fastapi import HTTPException
 from app.config import settings
@@ -13,13 +12,12 @@ class GeminiClient:
         self.model = model or settings.GEMINI_MODEL
         self.embedding_model = embedding_model or settings.GEMINI_EMBEDDING_MODEL
         self._headers = {
-            "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json",
         }
 
     async def generate_text(self, prompt: str, max_tokens: int = 512, temperature: float = 0.0) -> str:
         try:
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/{self.embedding_model}:embedContent"
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/{self.model}:generateContent?key={self.api_key}"
             payload = {"prompt": {"text": prompt}, "maxOutputTokens": max_tokens, "temperature": temperature}
             async with httpx.AsyncClient(timeout=30.0) as client:
                 resp = await client.post(url, headers=self._headers, json=payload)
@@ -38,21 +36,29 @@ class GeminiClient:
         if not isinstance(texts, list):
             texts = [texts]
 
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/{self.embedding_model}:embedContent"
+        url = (
+            f"https://generativelanguage.googleapis.com/v1beta/models/"
+            f"{self.embedding_model}:embedContent?key={self.api_key}"
+        )
 
-        payload = {
-            "input": [{"text": t} for t in texts]
-        }
+        embeddings = []
 
         async with httpx.AsyncClient(timeout=30.0) as client:
-            resp = await client.post(url, headers=self._headers, json=payload)
-            resp.raise_for_status()
-            data = resp.json()
+            for t in texts:
+                payload = {
+                    "content": {
+                        "parts": [{"text": t}]
+                    }
+                }
 
-        # La API devuelve vectores en: data["embedding"]["values"]
-        try:
-            return [item["embedding"]["value"] for item in data["embeddings"]]
-        except:
-            return data
+                resp = await client.post(url, headers=self._headers, json=payload)
+                resp.raise_for_status()
+                data = resp.json()
+
+                emb = data["embedding"]["values"]
+                embeddings.append(emb)
+
+        return embeddings
+
 
 

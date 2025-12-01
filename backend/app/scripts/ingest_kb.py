@@ -2,6 +2,7 @@ import os
 import asyncio
 from qdrant_client import QdrantClient
 from qdrant_client.http import models as qmodels
+from qdrant_client.http.exceptions import UnexpectedResponse
 
 from app.dependencies.gemini_client import GeminiClient
 from app.config import settings
@@ -16,19 +17,23 @@ async def ingest():
 
     # 1. Inicializar clientes
     gemini = GeminiClient()
-    qdrant = QdrantClient(url=settings.QDRANT_URL, api_key=settings.QDRANT_API_KEY)
+    qdrant = QdrantClient(
+        url=settings.QDRANT_URL, 
+        api_key=settings.QDRANT_API_KEY,
+        https=True
+    )
 
     # 2. Crear colección si no existe
     print("Validando colección company_kb...")
 
     vector_size = 768  # Gemini embedding models (ajustable según tu modelo)
     try:
-        qdrant.get_collection(settings.COLLECTION_NAME)
+        qdrant.get_collection(settings.QDRANT_COLLECTION)
         print("Colección ya existe.")
-    except:
+    except UnexpectedResponse:
         print("Colección no existe. Creando...")
         qdrant.create_collection(
-            collection_name=settings.COLLECTION_NAME,
+            collection_name=settings.QDRANT_COLLECTION,
             vectors_config=qmodels.VectorParams(
                 size=vector_size,
                 distance=qmodels.Distance.COSINE
@@ -74,7 +79,7 @@ async def ingest():
         )
 
     qdrant.upsert(
-        collection_name=settings.COLLECTION_NAME,
+        collection_name=settings.QDRANT_COLLECTION,
         points=points
     )
 

@@ -6,9 +6,10 @@ class Settings(BaseSettings):
     ENV: str = Field(default="dev")
 
     # Gemini / Google GenAI
-    GEMINI_API_KEY: str = Field(..., description="API Key for Google Gemini")
+    GEMINI_API_KEY: str = Field(default="", description="API Key for Google Gemini")
     GEMINI_MODEL: str = Field(default="models/text-bison-001", description="Model for Google Gemini")
-    GEMINI_EMBEDDING_MODEL: str = Field(default="models/embedding-001", description="Embedding model for Google Gemini")
+    GEMINI_EMBEDDING_MODEL: str = Field(default="text-embedding-004", description="Embedding model for Google Gemini")
+    GEMINI_EMBEDDING_MODEL: str = Field(default="text-embedding-004", description="Embedding model for Google Gemini")
 
     # Qdrant
     QDRANT_URL: str = Field(default="http://localhost:6333")
