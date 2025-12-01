@@ -1,4 +1,3 @@
-from fastapi import HTTPException
 from pydantic_settings import BaseSettings
 from pydantic import Field
 
@@ -9,37 +8,34 @@ class Settings(BaseSettings):
     # Gemini / Google GenAI
     GEMINI_API_KEY: str = Field(..., description="API Key for Google Gemini")
     GEMINI_MODEL: str = Field(default="models/text-bison-001", description="Model for Google Gemini")
-    GEMINI_EMBEDDING_MODEL: str = Field(default="models/embedding-gecko-001", description="Embedding model for Google Gemini")
+    GEMINI_EMBEDDING_MODEL: str = Field(default="models/embedding-001", description="Embedding model for Google Gemini")
 
     # Qdrant
     QDRANT_URL: str = Field(default="http://localhost:6333")
     QDRANT_API_KEY: str = Field(default="")
     QDRANT_COLLECTION: str = Field(default="company_kb")
     EMBED_MODEL: str = Field(default="text-bison-001")
-    
-    # Langroid - LangGraph
-    LANGSMITH_API_KEY: str = Field(..., description="API Key for Langroid")
-    LANGSMITH_TRACING_V2: bool = Field(default=True, description="Enable tracing for Langroid")
-    LANGSMITH_PROJECT: str = Field(default="langroid-ai-project", description="Project name for Langroid")
-    TAVILY_API_KEY: str = Field(..., description="API Key for Langroid")
 
-    # Whatsapp
-    WHATSAPP_VERYFY_TOKEN: str = Field(..., description="Verify token for Whatsapp")
-    WHATSAPP_TOKEN = Field(..., description="Token for Whatsapp")
-    WHATSAPP_PHONE_ID = Field(..., description="Phone ID for Whatsapp")
-    
-    # MySQL
-    MYSQL_USER: str = Field(..., description="User for MySQL")
-    MYSQL_PASSWORD: str = Field(..., description="Password for MySQL")
-    MYSQL_HOST: str = Field(..., description="Host for MySQL")
-    MYSQL_PORT: str = Field(..., description="Port for MySQL")
-    MYSQL_DB: str = Field(..., description="Database for MySQL")
-    # Sistema general
-    # DEBUG: bool = Field(default=True)
+    # Langroid / LangGraph (opcional hasta integrarlo)
+    LANGSMITH_API_KEY: str = Field(default="")
+    LANGSMITH_TRACING_V2: bool = Field(default=False)
+    LANGSMITH_PROJECT: str = Field(default="langroid-ai-project")
+    TAVILY_API_KEY: str = Field(default="")
+
+    # WhatsApp (opcional en dev)
+    WHATSAPP_PHONE_ID: str = Field(default="")
+    WHATSAPP_ACCESS_TOKEN: str = Field(default="")
+    WHATSAPP_VERIFY_TOKEN: str = Field(default="test_token")
+
+    # MySQL (puedes dejar valores por defecto para dev)
+    MYSQL_USER: str = Field(default="root")
+    MYSQL_PASSWORD: str = Field(default="password")
+    MYSQL_HOST: str = Field(default="127.0.0.1")
+    MYSQL_PORT: int = Field(default=3306)
+    MYSQL_DB: str = Field(default="autotaller_db")
 
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
 
 settings = Settings()
-

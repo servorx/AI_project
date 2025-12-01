@@ -27,25 +27,17 @@ async def get_recommendations() -> Dict[str, Any]:
 def rank_products(products: List[Product], prefs: Dict[str, Any]):
     if not prefs:
         return products
-
     score_map = []
-
     for p in products:
         score = 0
-
-        # Ejemplo de reglas según preferencias:
-        if prefs.get("format") and prefs["format"] in p.name.lower():
+        name_lower = (p.name or "").lower()
+        switch_lower = (p.switch or "").lower() if getattr(p, "switch", None) else ""
+        if prefs.get("format") and prefs["format"].lower() in name_lower:
             score += 3
-
-        if prefs.get("switch") and p.switch and prefs["switch"].lower() in p.switch.lower():
+        if prefs.get("switch") and prefs["switch"].lower() in switch_lower:
             score += 2
-
-        if prefs.get("budget") and p.price <= prefs["budget"]:
+        if prefs.get("budget") and getattr(p, "price", 9999999) <= prefs["budget"]:
             score += 1
-
         score_map.append((score, p))
-
-    # ordenar por score descendente
     score_map.sort(key=lambda x: x[0], reverse=True)
-
     return [p for _, p in score_map]
