@@ -20,8 +20,8 @@ async def ingest():
     qdrant = QdrantClient(
         url=settings.QDRANT_URL, 
         api_key=settings.QDRANT_API_KEY,
-        https=True
-    )
+        https=False
+        )
 
     # 2. Crear colección si no existe
     print("Validando colección company_kb...")

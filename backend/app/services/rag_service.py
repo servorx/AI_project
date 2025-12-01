@@ -38,7 +38,7 @@ class RAGService:
         # Extraer preferencias desde la KB y las transforma en un JSON estructurado
         # 1. Obtener últimos items de la KB (scroll)
         scroll_result = self.client.scroll(
-            collection_name=settings.COLLECTION_NAME,
+            collection_name=settings.QDRANT_COLLECTION,
             limit=limit,
             scroll_filter=None,
             with_payload=True

@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Header, HTTPException
 from app.models.chat_model import ChatRequest, ChatResponse
 from app.services.agent_service import CommercialAgentService
+from google.api_core import exceptions as google_exceptions
 
 router = APIRouter()
 
@@ -17,4 +18,9 @@ async def chat_endpoint(
     except Exception as e:
         # log aquí
         raise HTTPException(status_code=500, detail=str(e))
+    except google_exceptions.ResourceExhausted:
+        raise HTTPException(
+            status_code=503,
+            detail="Gemini está saturado. Intenta de nuevo en unos segundos."
+        )
     return ChatResponse(response=response)
