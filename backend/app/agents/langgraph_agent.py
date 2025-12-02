@@ -89,8 +89,10 @@ async def node_llm(state: AgentState) -> AgentState:
 
 # constructor de agente usando los nodos y flujo definidos
 class LangGraphAgent:
-    def __init__(self, session_id: str):
+    def __init__(self, session_id: str, gemini_client: GeminiClient = None, rag: RAGService = None):
         self.session_id = session_id
+        self.gemini = gemini_client or GeminiClient()
+        self.rag = rag or RAGService(self.gemini)
 
         # construir gráfico
         graph = StateGraph(AgentState)
@@ -120,14 +122,14 @@ class LangGraphAgent:
             user_message=message,
         )
 
-        result: AgentState = await self.app.invoke(initial_state)
+        result: AgentState = await self.app.ainvoke(initial_state)
 
         # anotación de fuentes
-        if result.retrieved_docs:
+        if result.get("retrieved_docs"):
             sources = [
                 d.get("id") or (d.get("payload") or {}).get("filename") or "fuente"
-                for d in result.retrieved_docs
+                for d in result["retrieved_docs"]
             ]
             result.llm_response += f"\n\nFuentes: {', '.join(sources)}"
 
-        return result.llm_response
+        return result["llm_response"]
