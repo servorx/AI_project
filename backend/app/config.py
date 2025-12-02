@@ -18,6 +18,7 @@ class Settings(BaseSettings):
     EMBED_MODEL: str = Field(default="text-bison-001")
 
     # Langroid / LangGraph (opcional hasta integrarlo)
+    USE_LANGGRAPH: bool = Field(default=True)
     LANGSMITH_API_KEY: str = Field(default="")
     LANGSMITH_TRACING_V2: bool = Field(default=False)
     LANGSMITH_PROJECT: str = Field(default="langroid-ai-project")
@@ -25,7 +26,7 @@ class Settings(BaseSettings):
 
     # WhatsApp (opcional en dev)
     WHATSAPP_PHONE_ID: str = Field(default="")
-    WHATSAPP_ACCESS_TOKEN: str = Field(default="")
+    WHATSAPP_TOKEN: str = Field(default="")
     WHATSAPP_VERIFY_TOKEN: str = Field(default="test_token")
 
     # MySQL (puedes dejar valores por defecto para dev)

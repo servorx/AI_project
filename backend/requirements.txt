@@ -3,19 +3,19 @@
 langchain-google-genai
 langgraph-cli[inmem]
 langchain
+langgraph
+langroid
 
 # FastAPI backend
 fastapi
 uvicorn
 pydantic
 pydantic-settings
-langroid
 google-generativeai
 google-genai
 python-dotenv
 httpx
 asyncio
-python-dotenv
 
 # Database (Qdrant)
 qdrant-client
