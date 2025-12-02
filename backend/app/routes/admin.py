@@ -4,6 +4,8 @@ from sqlalchemy.orm import Session
 from app.dependencies.db import get_db
 from app.models.db_models import Conversation, Message, User
 from typing import List
+# import run_ingest from app.scripts.ingest_kb
+from app.scripts.ingest_kb import ingest
 
 router = APIRouter()
 
@@ -48,3 +50,9 @@ def list_users(
     total = q.count()
     items = q.order_by(User.created_at.desc()).offset(skip).limit(limit).all()
     return {"total": total, "items": [{"id": u.id, "phone": u.phone, "created_at": u.created_at} for u in items]}
+
+# este endpoint en especifico es para recargar la ingesta de KB de forma manual en caso de que se deba de actualizar con el nuevo KB o un nuevo documento
+@router.post("/reload-kb")
+async def reload_kb():
+    result = await ingest()
+    return {"status": "ok", "detail": result}

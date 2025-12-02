@@ -2,6 +2,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse
 from app.routes import chat, whatsapp, admin, recommendation
 from app.config import settings
+from app.dependencies.db import create_tables
 
 app = FastAPI(
     title="Asistente Comercial Omnicanal",
@@ -22,15 +23,10 @@ async def global_exception_handler(request, exc):
         content={"error": str(exc), "detail": "Internal server error."}
     )
 
-# endopoint para probar la funcion 
+# endpoint para probar que el backend está funcionando
 @app.get("/health")
 def health():
     return {"status": "ok", "env": settings.ENV}
 
 # Crear tablas en arranque (solo en dev; en prod use migrations alembic)
-def create_tables():
-    from app.dependencies.db import engine
-    from app.models.db_models import Base
-    Base.metadata.create_all(bind=engine)
-
 create_tables()

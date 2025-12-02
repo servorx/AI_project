@@ -2,6 +2,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
 from typing import Generator
 from app.config import settings
+from app.models.db_models import Base
 
 DATABASE_URL = (
     f"mysql+pymysql://{settings.MYSQL_USER}:{settings.MYSQL_PASSWORD}"
@@ -18,3 +19,6 @@ def get_db() -> Generator[Session, None, None]:
         yield db
     finally:
         db.close()
+
+def create_tables():
+    Base.metadata.create_all(bind=engine)
