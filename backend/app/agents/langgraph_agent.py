@@ -81,13 +81,11 @@ async def node_llm(state: AgentState) -> AgentState:
 
     state.llm_response = response
     # quitar el comendario para debug de langgraph 
-    # state.llm_response = "[LANGGRAPH OK] " + response
+    # state.llm_response = "[LANGGRAPH OKADFKLN;SDHJVDFSDFLJKVSNFDLKVNSDJFLKVSNDFLVSNDFJLVSDNFKV] " + response
 
     # guardar memoria
     MemoryService.add_message(state.session_id, "assistant", response)
     return state
-
-
 
 # constructor de agente usando los nodos y flujo definidos
 class LangGraphAgent:
@@ -124,14 +122,40 @@ class LangGraphAgent:
             user_message=message,
         )
 
-        result = await self.app.ainvoke(initial_state)
+        # usar ainvoke (async)
+        res = await self.app.ainvoke(initial_state)
 
-        # anotación de fuentes
-        if result.get("retrieved_docs"):
-            sources = [
-                d.get("id") or (d.get("payload") or {}).get("filename") or "fuente"
-                for d in result["retrieved_docs"]
-            ]
-            result["llm_response"] += f"\n\nFuentes: {', '.join(sources)}"
+        # res puede ser dict o AgentState
+        if isinstance(res, dict):
+            retrieved_docs = res.get("retrieved_docs") or []
+            llm_response = res.get("llm_response") or res.get("llm") or ""
+        else:
+            # pydantic model
+            retrieved_docs = getattr(res, "retrieved_docs", []) or []
+            llm_response = getattr(res, "llm_response", "") or getattr(res, "llm", "")
 
-        return result["llm_response"]
+        # seguridad adicional: normalizar docs a lista de dict
+        if retrieved_docs is None:
+            retrieved_docs = []
+
+        # construir fuentes si existen
+        sources = []
+        for d in retrieved_docs:
+            if isinstance(d, dict):
+                src = d.get("id") or (d.get("payload") or {}).get("filename") or ""
+            else:
+                # si d es objeto con .payload .id
+                src = getattr(d, "id", None) or (getattr(d, "payload", {}) or {}).get("filename") or ""
+            if src:
+                sources.append(str(src))
+
+        if sources:
+            llm_response = f"{llm_response}\n\nFuentes: {', '.join(sources)}"
+        else:
+            llm_response = f"{llm_response}\n\nFuentes: Ninguna"
+
+        # guardar en memoria (opcional)
+        MemoryService.add_message(self.session_id, "assistant", llm_response)
+
+        return llm_response
+

@@ -21,7 +21,8 @@ class RAGService:
             limit=top_k,
             with_payload=True
         )
-
+        print(f"[RAG] VECTOR length={len(vector)}")
+        print(f"[RAG] HITS raw response: {hits}")
         results = []
         for h in hits.points:
             payload = h.payload or {}

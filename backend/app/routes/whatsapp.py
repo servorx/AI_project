@@ -7,7 +7,6 @@ from app.services.agent_service import CommercialAgentService
 from app.dependencies.db import get_db
 from sqlalchemy.orm import Session
 from app.models.db_models import Conversation, Message
-from app.utils.logger import log
 
 router = APIRouter()
 
@@ -29,7 +28,7 @@ def verify_token(mode: str = None, token: str = None, challenge: str = None):
 @router.post("/webhook")
 async def receive_message(request: Request, db: Session = Depends(get_db)):
     body = await request.json()
-    log("whatsapp webhook body", body)
+    print("whatsapp webhook body", body)
 
     # The webhook shape:
     # { "entry": [ { "changes":[{ "value": { "messages":[{...}], "metadata":{...} } }] } ] }
@@ -40,7 +39,7 @@ async def receive_message(request: Request, db: Session = Depends(get_db)):
         messages = value.get("messages", [])
         metadata = value.get("metadata", {})
     except Exception as e:
-        log("No message found in webhook", str(e))
+        print("No message found in webhook", str(e))
         return JSONResponse({"status": "ignored"}, status_code=200)
 
     if not messages:
@@ -81,7 +80,7 @@ async def receive_message(request: Request, db: Session = Depends(get_db)):
     try:
         resp_text = await agent_service.answer(text)
     except Exception as e:
-        log("Error in agent", str(e))
+        print("Error in agent", str(e))
         resp_text = "Lo siento, tuve un problema procesando tu mensaje. Intenta de nuevo más tarde."
 
     # Persist assistant message
@@ -94,6 +93,6 @@ async def receive_message(request: Request, db: Session = Depends(get_db)):
     try:
         await wa.send_text(to_phone=from_phone, text=resp_text)
     except Exception as e:
-        log("Error sending WA message", str(e))
+        print("Error sending WA message", str(e))
 
     return JSONResponse({"status": "ok"}, status_code=200)

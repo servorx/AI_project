@@ -68,7 +68,7 @@ class GeminiClient:
                     }
                 }
 
-                # 🔥 REINTENTOS 429 APLICADOS POR TEXTO
+                # REINTENTOS 429 APLICADOS POR TEXTO
                 for attempt in range(5):
                     try:
                         resp = await client.post(url, headers=self._headers, json=payload)
