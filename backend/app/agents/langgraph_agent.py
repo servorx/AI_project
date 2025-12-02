@@ -80,6 +80,8 @@ async def node_llm(state: AgentState) -> AgentState:
         response = "Lo siento, tuve un problema con el servidor (timeout)."
 
     state.llm_response = response
+    # quitar el comendario para debug de langgraph 
+    # state.llm_response = "[LANGGRAPH OK] " + response
 
     # guardar memoria
     MemoryService.add_message(state.session_id, "assistant", response)
@@ -122,7 +124,7 @@ class LangGraphAgent:
             user_message=message,
         )
 
-        result: AgentState = await self.app.ainvoke(initial_state)
+        result = await self.app.ainvoke(initial_state)
 
         # anotación de fuentes
         if result.get("retrieved_docs"):
@@ -130,6 +132,6 @@ class LangGraphAgent:
                 d.get("id") or (d.get("payload") or {}).get("filename") or "fuente"
                 for d in result["retrieved_docs"]
             ]
-            result.llm_response += f"\n\nFuentes: {', '.join(sources)}"
+            result["llm_response"] += f"\n\nFuentes: {', '.join(sources)}"
 
         return result["llm_response"]
