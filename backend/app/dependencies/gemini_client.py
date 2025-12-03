@@ -17,7 +17,12 @@ class GeminiClient:
             "Content-Type": "application/json",
         }
 
-    async def generate_text(self, prompt: str, max_tokens: int = 512, temperature: float = 0.0) -> str:
+    async def generate_text(
+        self, 
+        prompt: str, 
+        max_tokens: int = 1024, 
+        temperature: float = 0.2) -> str:
+
         try:
             url = f"https://generativelanguage.googleapis.com/v1beta/models/{self.model}:generateContent?key={self.api_key}"
             payload = {

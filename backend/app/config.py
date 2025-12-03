@@ -20,7 +20,7 @@ class Settings(BaseSettings):
     # Langroid / LangGraph (opcional hasta integrarlo)
     USE_LANGGRAPH: bool = Field(default=True)
     LANGSMITH_API_KEY: str = Field(default="")
-    LANGSMITH_TRACING_V2: bool = Field(default=False)
+    LANGSMITH_TRACING_V2: bool = Field(default=True)
     LANGSMITH_PROJECT: str = Field(default="langroid-ai-project")
     TAVILY_API_KEY: str = Field(default="")
 
@@ -29,6 +29,8 @@ class Settings(BaseSettings):
     WHATSAPP_TOKEN: str = Field(default="")
     WHATSAPP_VERIFY_TOKEN: str = Field(default="test_token")
 
+    # para saber si se ingesta el kb o no (solo desarrollo local)
+    SHOW_SOURCES: bool = Field(default=True)
     # MySQL (puedes dejar valores por defecto para dev)
     MYSQL_USER: str = Field(default="root")
     MYSQL_PASSWORD: str = Field(default="password")

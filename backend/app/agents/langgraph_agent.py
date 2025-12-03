@@ -149,10 +149,17 @@ class LangGraphAgent:
             if src:
                 sources.append(str(src))
 
-        if sources:
-            llm_response = f"{llm_response}\n\nFuentes: {', '.join(sources)}"
+        # mostrar o no las fuentes según config
+        if settings.SHOW_SOURCES:
+            # mostrar fuentes si hay alguna
+            if sources:
+                llm_response = f"{llm_response}\n\nFuentes: {', '.join(sources)}"
+            # no mostrar fuentes si no hay
+            else:
+                llm_response = f"{llm_response}\n\nFuentes: Ninguna"
         else:
-            llm_response = f"{llm_response}\n\nFuentes: Ninguna"
+            # NO mostrar fuentes en modo producción o cuando esté desactivado
+            pass
 
         # guardar en memoria (opcional)
         MemoryService.add_message(self.session_id, "assistant", llm_response)
