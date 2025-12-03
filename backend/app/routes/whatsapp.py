@@ -12,56 +12,57 @@ router = APIRouter()
 
 # GET verification
 @router.get("/webhook")
-def verify_token(mode: str = None, token: str = None, challenge: str = None):
-    # Meta uses hub.mode, hub.verify_token, hub.challenge in some docs, other times different names
-    # Accept both
-    mode = mode or ""
-    token = token or ""
-    verify_token = settings.WHATSAPP_VERIFY_TOKEN
+def verify_token(request: Request):
+    params = request.query_params
 
-    if token == verify_token:
-        # return challenge (raw)
-        return PlainTextResponse(content=challenge or "", status_code=status.HTTP_200_OK)
-    return JSONResponse({"status": "error", "message": "Invalid verify token"}, status_code=403)
+    mode = params.get("hub.mode")
+    challenge = params.get("hub.challenge")
+    token = params.get("hub.verify_token")
+
+    if token == settings.WHATSAPP_VERIFY_TOKEN:
+        return PlainTextResponse(content=challenge or "")
+    
+    return JSONResponse({"error": "Invalid verify token"}, status_code=403)
+
 
 # POST receive messages
 @router.post("/webhook")
 async def receive_message(request: Request, db: Session = Depends(get_db)):
     body = await request.json()
-    print("whatsapp webhook body", body)
+    print("WA webhook body:", body)
 
-    # The webhook shape:
-    # { "entry": [ { "changes":[{ "value": { "messages":[{...}], "metadata":{...} } }] } ] }
     try:
-        entry = body.get("entry", [])[0]
-        changes = entry.get("changes", [])[0]
-        value = changes.get("value", {})
+        entry = body["entry"][0]
+        changes = entry["changes"][0]
+        value = changes["value"]
         messages = value.get("messages", [])
         metadata = value.get("metadata", {})
-    except Exception as e:
-        print("No message found in webhook", str(e))
-        return JSONResponse({"status": "ignored"}, status_code=200)
+    except:
+        return JSONResponse({"status": "ignored"})
 
     if not messages:
-        return JSONResponse({"status": "no_messages"}, status_code=200)
+        return JSONResponse({"status": "no_messages"})
 
     msg = messages[0]
-    from_phone = msg.get("from")  # e.g. "57300...."
-    text = None
-    if msg.get("text"):
-        text = msg["text"].get("body")
-    elif msg.get("type") == "interactive":
-        # handle button replies / interactive messages
-        interactive = msg.get("interactive", {})
-        if interactive.get("type") == "button_reply":
-            text = interactive["button_reply"].get("title") or interactive["button_reply"].get("id")
-    # fallback
-    text = text or ""
+    msg_id = msg.get("id")
+    from_phone = msg.get("from")
 
-    # Use session_id as phone number (simple)
+    # Evitar duplicados (muy importante)
+    exists = db.query(Message).filter_by(external_id=msg_id).first()
+    if exists:
+        return JSONResponse({"status": "duplicate_ignored"})
+
+    text = ""
+    if msg.get("text"):
+        text = msg["text"]["body"]
+    elif msg.get("type") == "interactive":
+        interactive = msg["interactive"]
+        if interactive["type"] == "button_reply":
+            text = interactive["button_reply"].get("title")
+
+    # Crear conversación si no existe
     session_id = from_phone
 
-    # Persist conversation & message
     conv = db.query(Conversation).filter_by(session_id=session_id).first()
     if not conv:
         conv = Conversation(session_id=session_id, user_phone=from_phone)
@@ -69,30 +70,34 @@ async def receive_message(request: Request, db: Session = Depends(get_db)):
         db.commit()
         db.refresh(conv)
 
-    message = Message(conversation_id=conv.id, role="user", content=text)
-    db.add(message)
+    # Guardar mensaje del usuario
+    user_msg = Message(
+        conversation_id=conv.id,
+        role="user",
+        content=text,
+        external_id=msg_id
+    )
+    db.add(user_msg)
     db.commit()
-    db.refresh(message)
 
-    # Call agent
+    # Llamar agente
     agent_service = CommercialAgentService(session_id=session_id)
-    # note: agent_service.answer is async
     try:
         resp_text = await agent_service.answer(text)
-    except Exception as e:
-        print("Error in agent", str(e))
-        resp_text = "Lo siento, tuve un problema procesando tu mensaje. Intenta de nuevo más tarde."
+    except:
+        resp_text = "Lo siento, ocurrió un error procesando tu mensaje."
 
-    # Persist assistant message
-    assistant_msg = Message(conversation_id=conv.id, role="assistant", content=resp_text)
+    # Guardar respuesta del asistente
+    assistant_msg = Message(
+        conversation_id=conv.id,
+        role="assistant",
+        content=resp_text
+    )
     db.add(assistant_msg)
     db.commit()
 
-    # Send response via WhatsApp
+    # Enviar WhatsApp
     wa = WhatsAppService()
-    try:
-        await wa.send_text(to_phone=from_phone, text=resp_text)
-    except Exception as e:
-        print("Error sending WA message", str(e))
+    await wa.send_text(to_phone=from_phone, text=resp_text)
 
-    return JSONResponse({"status": "ok"}, status_code=200)
+    return {"status": "ok"}

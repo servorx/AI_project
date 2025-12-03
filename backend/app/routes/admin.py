@@ -54,5 +54,5 @@ def list_users(
 # este endpoint en especifico es para recargar la ingesta de KB de forma manual en caso de que se deba de actualizar con el nuevo KB o un nuevo documento
 @router.post("/reload-kb")
 async def reload_kb():
-    result = await ingest()
-    return {"status": "ok", "detail": result}
+    log_text = await ingest()
+    return {"status": "ok", "detail": log_text}
