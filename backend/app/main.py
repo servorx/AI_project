@@ -1,4 +1,6 @@
 from fastapi import FastAPI, HTTPException
+# arreglar CORS
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from app.routes import chat, whatsapp, admin, recommendation
 from app.config import settings
@@ -22,6 +24,15 @@ async def global_exception_handler(request, exc):
         status_code=500,
         content={"error": str(exc), "detail": "Internal server error."}
     )
+# configurar CORS
+app.add_middleware(
+    CORSMiddleware,
+    # el * solo mientras desarrollo
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # endpoint para probar que el backend está funcionando
 @app.get("/health")

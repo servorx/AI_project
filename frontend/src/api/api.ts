@@ -5,7 +5,6 @@ import type { ChatResponse } from "../types/api/ChatResponse";
 import type { MessageItem } from "../types/api/MessageItem";
 
 export const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:8000";
-
 // crear la constante de axios
 export const api = axios.create({
   baseURL: API_BASE,
@@ -41,10 +40,12 @@ export async function postChatMessage(
   sessionId: string,
   message: string
 ): Promise<ChatResponse> {
-  const resp = await api.post("/chat/", {
-    params: { session_id: sessionId },
-    data: { message },
-  });
+  const resp = await api.post(
+    "/chat",
+    { message },
+    { params: { session_id: sessionId } }
+  );
+
   return resp.data;
 }
 

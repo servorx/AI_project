@@ -6,12 +6,10 @@ import { AnimatePresence, motion } from "framer-motion";
 import Sidebar from "../components/Sidebar";
 import InputChat from "../components/InputChat";
 import type { Message } from "../types/Message";
+// generar id aleatorio para una sesion de chat web
+import { v4 as uuid } from "uuid";
 
-interface Props {
-  sessionId: string;
-}
-
-export default function ChatLayout({ sessionId }: Props) {
+export default function ChatLayout() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
@@ -19,7 +17,8 @@ export default function ChatLayout({ sessionId }: Props) {
       created_at: timeNowISO(),
     },
   ]);
-
+  // definir sesionId
+  const [sessionId] = useState(uuid());
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -46,11 +45,11 @@ export default function ChatLayout({ sessionId }: Props) {
     setLoading(true);
 
     try {
-      const data = await postChatMessage(sessionId, input);
+      const data = await postChatMessage(sessionId, userMsg.content);
 
       const botMsg: Message = {
         role: "assistant",
-        content: data.response ?? "Error.",
+        content: data.response || "Error interno del agente.",
         created_at: timeNowISO(),
       };
 
@@ -62,7 +61,8 @@ export default function ChatLayout({ sessionId }: Props) {
         ...s,
         {
           role: "assistant",
-          content: "Error de servidor. Intenta de nuevo.",
+          content:
+            "Hubo un error al conectar con el servidor. Intenta nuevamente.",
           created_at: timeNowISO(),
         },
       ]);
