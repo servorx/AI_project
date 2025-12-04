@@ -79,7 +79,7 @@ export default function ChatLayout() {
       <motion.div
         initial={{ y: -12, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="px-8 py-4 border-b border-border bg-surface"
+        className="px-8 py-4 border-b border-border bg-surface sticky top-14 z-40"
       >
         <h2 className="text-lg font-semibold text-text-primary">
           Chat con el Asistente
@@ -91,7 +91,7 @@ export default function ChatLayout() {
         {/* CHAT */}
         <div
           ref={scrollerRef}
-          className="flex-1 overflow-auto px-6 pt-4 pb-1 space-y-4 bg-background"
+          className="flex-1 overflow-y-auto px-6 pt-4 space-y-4 bg-background"
         >
           <AnimatePresence mode="popLayout">
             {messages.map((m, i) => (
@@ -104,7 +104,7 @@ export default function ChatLayout() {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="text-secondary text-sm"
+              className="text-secondary text-sm pb-3"
             >
               El asistente está escribiendo…
             </motion.div>
@@ -114,14 +114,14 @@ export default function ChatLayout() {
         {/* SIDEBAR */}
         <Sidebar />
       </div>
-
-      {/* INPUTCHAT COMPONENT */}
-      <InputChat
-        input={input}
-        setInput={setInput}
-        loading={loading}
-        onSend={sendMessage}
-      />
+      <div className="sticky bottom-0 left-0 right-0 bg-surface z-50">
+        <InputChat
+          input={input}
+          setInput={setInput}
+          loading={loading}
+          onSend={sendMessage}
+        />
+      </div>
     </div>
   );
 }

@@ -21,7 +21,7 @@ export default function InputChat({ input, setInput, loading, onSend }: Props) {
         px-4 py-3 
         border-t border-border 
         bg-surface 
-        flex items-end gap-3
+        flex items-center gap-3
       "
     >
       {/* Botón Clip */}
@@ -39,7 +39,7 @@ export default function InputChat({ input, setInput, loading, onSend }: Props) {
           shadow-sm
         "
       >
-        <Paperclip size={18} />
+        <Paperclip size={20} />
       </motion.button>
 
       {/* Input expandible estilo WhatsApp */}
@@ -89,8 +89,10 @@ export default function InputChat({ input, setInput, loading, onSend }: Props) {
         `}
       >
         {loading ? (
-          <Loader />) : 
-          (<Send size={18} className="text-background" />)}
+          <Loader />
+        ) : (
+          <Send size={18} className="text-background" />
+        )}
       </motion.button>
     </form>
   );
