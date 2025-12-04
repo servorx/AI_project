@@ -11,15 +11,16 @@ export default function ChatBubble({ m }: { m: Message }) {
       exit={{ opacity: 0, y: -6 }}
       transition={{ duration: 0.25, ease: "easeOut" }}
       className={`
-        max-w-4/5 p-3 rounded-2xl my-1 shadow-md backdrop-blur-sm 
+        max-w-3/4 p-3 rounded-2xl my-1 shadow-md backdrop-blur-sm
+        text-sm leading-relaxed wrap-break-word box-content
         ${isUser 
-          ? "bg-primary text-background ml-auto" 
-          : "bg-surface text-text-primary border border-border"
+          ? "bg-primary text-background ml-auto my-4 rounded-br-sm" 
+          : "bg-surface text-text-primary border border-border my-4 rounded-bl-sm"
         }
       `}
     >
       {/* Texto del mensaje */}
-      <div className="whitespace-pre-line leading-relaxed">
+      <div className="whitespace-pre-line ">
         {m.content}
       </div>
 

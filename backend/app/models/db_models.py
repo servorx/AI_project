@@ -9,6 +9,7 @@ class Conversation(Base):
     session_id = Column(String(128))
     user_phone = Column(String(32), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
     messages = relationship("Message", back_populates="conversation", cascade="all, delete-orphan")
 
@@ -20,15 +21,20 @@ class Message(Base):
     content = Column(Text)
     external_id = Column(String(128), index=True, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
     conversation = relationship("Conversation", back_populates="messages")
 
 class User(Base):
     __tablename__ = "users"
+    # ifnromacion del contacto
     id = Column(Integer, primary_key=True)
+    name = Column(String(128), nullable=True)
+    email = Column(String(128), nullable=True)
+    address = Column(String(256), nullable=True)
+
+    # informacion general del usuario
     phone = Column(String(32), index=True, nullable=True)
+    channel = Column(String(32), nullable=True)   # web / whatsapp
     created_at = Column(DateTime(timezone=True), server_default=func.now())
-    chat_id = Column(Integer, ForeignKey("conversations.id"), index=True)
-    channel = Column(String(32), index=True, nullable=True)
-    last_message = Column(Text, nullable=True)
-    updated_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
     total_messages = Column(Integer, default=0)

@@ -78,14 +78,11 @@ export default function ChatLayout() {
       <motion.div
         initial={{ y: -12, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="px-6 py-4 border-b border-border bg-surface"
+        className="px-8 py-5 border-b border-border bg-surface"
       >
         <h2 className="text-lg font-semibold text-text-primary">
           Chat con el Asistente
         </h2>
-        <p className="text-sm text-text-secondary">
-          Sesión: <span className="font-mono">{sessionId}</span>
-        </p>
       </motion.div>
 
       {/* CONTENEDOR GENERAL (Chat + Sidebar) */}

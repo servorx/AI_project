@@ -20,15 +20,15 @@ export default function LoadingThreeDotsPulse() {
       transition={{ staggerChildren: 0.2 }}
     >
       <motion.span
-        className="w-5 h-5 rounded-full bg-blue-600"
+        className="w-5 h-5 rounded-full bg-white"
         variants={dotVariants}
       />
       <motion.span
-        className="w-5 h-5 rounded-full bg-blue-600"
+        className="w-5 h-5 rounded-full bg-white"
         variants={dotVariants}
       />
       <motion.span
-        className="w-5 h-5 rounded-full bg-blue-600"
+        className="w-5 h-5 rounded-full bg-white"
         variants={dotVariants}
       />
     </motion.div>

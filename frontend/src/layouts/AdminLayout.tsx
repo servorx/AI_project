@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { getConversations, getMessages } from "../api/api";
+import { getConversations } from "../api/api_conversation";
+import { getMessages } from "../api/api_messages";
 import { motion } from "framer-motion";
 import type { ConversationItem } from "../types/api/ConversationItem";
 import type { Message } from "../types/Message";

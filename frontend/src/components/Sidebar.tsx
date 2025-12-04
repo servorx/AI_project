@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { getRecommendations } from "../api/api";
+import { getRecommendations } from "../api/api_recomendations";
 import type { Product } from "../types/Product";
 import type { Guide } from "../types/Guide";
 
@@ -62,9 +62,14 @@ export default function Sidebar() {
               <span className="text-secondary font-semibold">
                 ${p.price}
               </span>
-              <span className="text-primary">
-                {p.switch}
-              </span>
+              <div>
+                <span className="text-text-primary mr-1">
+                  switch: 
+                </span>
+                <span className="text-primary">
+                  {p.switch}
+                </span>
+              </div>
             </div>
           </motion.div>
         ))}

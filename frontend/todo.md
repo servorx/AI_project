@@ -19,3 +19,6 @@ nombre, direccion, email,
 actualizar el nombre de forma dinamica en las conversaciones 
 
 establecer un orden de flujo de LLM como si fuera una persona
+
+
+edición/moderación de mensajes y usuarios para el bkacend y el frontend
