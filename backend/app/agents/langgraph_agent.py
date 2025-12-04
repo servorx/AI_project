@@ -47,6 +47,10 @@ async def node_build_prompt(state: AgentState) -> AgentState:
 
     kb_context = "\n\n".join(ctx_parts) if ctx_parts else "No hay contexto relevante en KB."
 
+    # se puede implementar en el prompt de langgraph 
+    # - Cierra con "Fuentes: [...]" indicando las fuentes usadas.
+    # pero solo para modo de desarrollo porque esto en realidad no es necesario
+    source_option = "Fuentes: [...]" if settings.SHOW_SOURCES else ""
     state.prompt = f"""
 {SYSTEM_PROMPT}
 
@@ -64,7 +68,7 @@ RESPONDER SIGUIENDO ESTAS REGLAS:
 - No inventes.
 - Si falta información, pide aclaración.
 - Responde en español neutro (Colombia).
-- Cierra con "Fuentes: [...]" indicando las fuentes usadas.
+{source_option}
 
 RESPUESTA:
 """

@@ -23,12 +23,13 @@ export default function ChatLayout() {
   const [loading, setLoading] = useState(false);
 
   const scrollerRef = useRef<HTMLDivElement | null>(null);
+  const bottomRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    scrollerRef.current?.scrollTo({
-      top: scrollerRef.current.scrollHeight,
-      behavior: "smooth",
-    });
+    const timeout = setTimeout(() => {
+      bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, 10);
+    return () => clearTimeout(timeout);
   }, [messages]);
 
   async function sendMessage() {
@@ -78,7 +79,7 @@ export default function ChatLayout() {
       <motion.div
         initial={{ y: -12, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="px-8 py-5 border-b border-border bg-surface"
+        className="px-8 py-4 border-b border-border bg-surface"
       >
         <h2 className="text-lg font-semibold text-text-primary">
           Chat con el Asistente
@@ -90,7 +91,7 @@ export default function ChatLayout() {
         {/* CHAT */}
         <div
           ref={scrollerRef}
-          className="flex-1 overflow-auto p-6 space-y-4 bg-background"
+          className="flex-1 overflow-auto px-6 pt-4 pb-1 space-y-4 bg-background"
         >
           <AnimatePresence mode="popLayout">
             {messages.map((m, i) => (
@@ -98,6 +99,7 @@ export default function ChatLayout() {
             ))}
           </AnimatePresence>
 
+          <div ref={bottomRef} />
           {loading && (
             <motion.div
               initial={{ opacity: 0 }}

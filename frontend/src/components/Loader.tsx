@@ -1,36 +1,24 @@
 import { motion } from "framer-motion";
-import type { Variants } from "framer-motion";
 
-const dotVariants: Variants = {
-  pulse: {
-    scale: [1, 1.5, 1],
-    transition: {
-      duration: 1.2,
-      repeat: Infinity,
-      ease: "easeInOut",
-    },
-  },
-};
-
-export default function LoadingThreeDotsPulse() {
+export default function LoaderSmall() {
   return (
-    <motion.div
-      className="flex items-center justify-center gap-5"
-      animate="pulse"
-      transition={{ staggerChildren: 0.2 }}
-    >
-      <motion.span
-        className="w-5 h-5 rounded-full bg-white"
-        variants={dotVariants}
-      />
-      <motion.span
-        className="w-5 h-5 rounded-full bg-white"
-        variants={dotVariants}
-      />
-      <motion.span
-        className="w-5 h-5 rounded-full bg-white"
-        variants={dotVariants}
-      />
-    </motion.div>
+    <div className="flex items-center gap-1">
+      {[0, 1, 2].map((i) => (
+        <motion.span
+          key={i}
+          className="w-2 h-2 rounded-full bg-background/90"
+          animate={{
+            opacity: [0.4, 1, 0.4],
+            y: [0, -3, 0],
+          }}
+          transition={{
+            duration: 0.6,
+            repeat: Infinity,
+            delay: i * 0.15,
+            ease: "easeInOut",
+          }}
+        />
+      ))}
+    </div>
   );
-};
+}
