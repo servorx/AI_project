@@ -24,7 +24,7 @@ export default function Sidebar() {
 
   return (
     <aside
-      className="w-[30%] bg-surface border-l border-border p-4 hidden lg:flex flex-col overflow-y-auto"
+      className="w-2/6 bg-surface border-l border-border p-4 hidden lg:flex flex-col overflow-y-auto"
     >
     <h2 className="text-lg font-semibold text-text-primary mb-4">
       Recomendaciones

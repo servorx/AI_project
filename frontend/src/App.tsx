@@ -11,13 +11,14 @@ export default function App() {
 
   return (
     <div className="h-screen flex flex-col bg-background overflow-hidden">
-      {/* hacer que el navbar siempre aparezca en la parte superior */}
-      <div className="sticky top-0 z-50 bg-surface border-b border-border">
-        <NavBar 
-        page={page} 
-        setPage={setPage} 
-        />
-      </div>
+
+      {/* Navbar directamente, con sticky aplicado aquí */}
+      <NavBar
+        page={page}
+        setPage={setPage}
+        className="sticky top-0 z-50 bg-surface border-b border-border"
+      />
+
       <AnimatePresence mode="wait">
         {page === "chat" ? (
           <PageTransition key="chat">
