@@ -73,22 +73,48 @@ RESPONDER SIGUIENDO ESTAS REGLAS:
 RESPUESTA:
 """
     return state
+
+# nuevo nodo para la implementacion de fallbacks, garantiza que el agente NUNCA devuelva una respuesta vacía.
+async def node_fallback(state: AgentState) -> AgentState:
+    response = state.llm_response.strip()
+
+    if not response:
+        if state.retrieved_docs:
+            response = (
+                "Estoy revisando tu consulta con la información disponible, "
+                "pero necesito un poco más de detalles para darte una recomendación precisa."
+            )
+        else:
+            response = (
+                "No encontré información en la base de conocimientos para tu consulta. "
+                "¿Puedes darme más detalles?"
+            )
+
+    state.llm_response = response
+    return state
+
+
 async def node_llm(state: AgentState) -> AgentState:
+    print("=== PROMPT ENVIADO AL LLM ===")
+    print(state.prompt)
+    print("==============================")
     gem = GeminiClient()
     try:
         response = await asyncio.wait_for(
-            gem.generate_text(state.prompt, max_tokens=512, temperature=0.1),
+            gem.generate_text(state.prompt, max_tokens=512, temperature=0.3),
             timeout=20
         )
     except asyncio.TimeoutError:
         response = "Lo siento, tuve un problema con el servidor (timeout)."
 
+    # proteger contra None o vacío
+    if not response or not response.strip():
+        response = ""
+
     state.llm_response = response
     # quitar el comendario para debug de langgraph 
     # state.llm_response = "[LANGGRAPH OKADFKLN;SDHJVDFSDFLJKVSNFDLKVNSDJFLKVSNDFLVSNDFJLVSDNFKV] " + response
 
-    # guardar memoria
-    MemoryService.add_message(state.session_id, "assistant", response)
     return state
 
 # constructor de agente usando los nodos y flujo definidos
@@ -106,13 +132,15 @@ class LangGraphAgent:
         graph.add_node("retrieve", node_retrieve)
         graph.add_node("build_prompt", node_build_prompt)
         graph.add_node("llm", node_llm)
+        graph.add_node("fallback", node_fallback)
 
         # edges / flujo
         graph.set_entry_point("load_memory")
         graph.add_edge("load_memory", "retrieve")
         graph.add_edge("retrieve", "build_prompt")
         graph.add_edge("build_prompt", "llm")
-        graph.add_edge("llm", END)
+        graph.add_edge("llm", "fallback")
+        graph.add_edge("fallback", END)
 
         # compilar
         self.app = graph.compile()
