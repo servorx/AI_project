@@ -6,6 +6,33 @@ import google.api_core.exceptions as google_exceptions
 
 BASE_URL = "https://generativeai.googleapis.com/v1"
 
+# funcion para poder extraer texto de la respuesta de Gemini y normalizar todas sus respuetas 
+def extract_text(data: dict) -> str:
+    # Caso 1: formato clásico con candidates
+    if "candidates" in data and len(data["candidates"]) > 0:
+        cand = data["candidates"][0]
+
+        # Si trae content con parts
+        content = cand.get("content")
+        if content and "parts" in content:
+            parts = content["parts"]
+            return "".join(p.get("text", "") for p in parts)
+
+        # Gemini 1.5 A veces trae directamente parts
+        if "parts" in cand:
+            return "".join(p.get("text", "") for p in cand["parts"])
+
+    # Caso 2: formato con content en raíz
+    if "content" in data and "parts" in data["content"]:
+        return "".join(p.get("text", "") for p in data["content"]["parts"])
+
+    # Caso 3: respuestas fallback
+    return (
+        data.get("outputText")
+        or data.get("text")
+        or ""
+    )
+
 class GeminiClient:
     def __init__(self, api_key: str = None, model: str = None, embedding_model: str = None):
         self.api_key = api_key or settings.GEMINI_API_KEY
@@ -20,7 +47,7 @@ class GeminiClient:
     async def generate_text(
         self, 
         prompt: str, 
-        max_tokens: int = 1024, 
+        max_tokens: int = 4096, 
         temperature: float = 0.2) -> str:
 
         try:
@@ -47,12 +74,8 @@ class GeminiClient:
         except Exception as e:
             raise RuntimeError(f"Error calling Gemini: {str(e)}")
 
-        if "candidates" in data and len(data["candidates"]) > 0:
-            content = data["candidates"][0].get("content", {})
-            parts = content.get("parts", [])
-            text = "".join(p.get("text", "") for p in parts)
-            return text
-        return data.get("outputText") or data.get("text") or ""
+        return extract_text(data)
+
     # este metodo de la clase es para generar embeddings usando Gemini 
     async def embed_texts(self, texts: list[str]):
         if not isinstance(texts, list):
