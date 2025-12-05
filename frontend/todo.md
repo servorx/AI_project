@@ -14,7 +14,8 @@ metere mas margin a los mensajes
 
 
 
-nombre, direccion, email,
+nombre, direccion, email, almacenarlo en la base de datos
+
 
 actualizar el nombre de forma dinamica en las conversaciones 
 

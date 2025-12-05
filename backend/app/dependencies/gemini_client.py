@@ -21,7 +21,7 @@ class GeminiClient:
         self, 
         prompt: str, 
         max_tokens: int = 1024, 
-        temperature: float = 0.3) -> str:
+        temperature: float = 0.2) -> str:
 
         try:
             url = f"https://generativelanguage.googleapis.com/v1beta/models/{self.model}:generateContent?key={self.api_key}"

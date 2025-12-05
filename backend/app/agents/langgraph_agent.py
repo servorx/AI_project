@@ -70,7 +70,7 @@ RESPONDER SIGUIENDO ESTAS REGLAS:
 - Responde en español neutro (Colombia).
 {source_option}
 
-RESPUESTA:
+RESPUESTA (no dejes esta sección vacía, responde con al menos 2 frases completas):
 """
     return state
 
@@ -101,7 +101,7 @@ async def node_llm(state: AgentState) -> AgentState:
     gem = GeminiClient()
     try:
         response = await asyncio.wait_for(
-            gem.generate_text(state.prompt, max_tokens=512, temperature=0.3),
+            gem.generate_text(state.prompt, max_tokens=512, temperature=0.2),
             timeout=20
         )
     except asyncio.TimeoutError:
@@ -115,6 +115,9 @@ async def node_llm(state: AgentState) -> AgentState:
     # quitar el comendario para debug de langgraph 
     # state.llm_response = "[LANGGRAPH OKADFKLN;SDHJVDFSDFLJKVSNFDLKVNSDJFLKVSNDFLVSNDFJLVSDNFKV] " + response
 
+    # TODO: revisar si esta es la fuente del error de la memoria de gemini 
+    # guardar memoria (opcional)
+    MemoryService.add_message(state.session_id, "assistant", state.llm_response)
     return state
 
 # constructor de agente usando los nodos y flujo definidos

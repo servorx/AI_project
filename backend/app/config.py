@@ -18,7 +18,7 @@ class Settings(BaseSettings):
     EMBED_MODEL: str = Field(default="text-bison-001")
 
     # Langroid / LangGraph (opcional hasta integrarlo)
-    USE_LANGGRAPH: bool = Field(default=True)
+    USE_LANGGRAPH: bool = Field(default=False)
     LANGSMITH_API_KEY: str = Field(default="")
     LANGSMITH_TRACING_V2: bool = Field(default=True)
     LANGSMITH_PROJECT: str = Field(default="langroid-ai-project")

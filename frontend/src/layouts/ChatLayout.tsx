@@ -8,6 +8,7 @@ import InputChat from "../components/InputChat";
 import type { Message } from "../types/Message";
 // generar id aleatorio para una sesion de chat web
 import { v4 as uuid } from "uuid";
+import ChatHeader from "../components/ChatHeader";
 
 export default function ChatLayout() {
   const [messages, setMessages] = useState<Message[]>([
@@ -74,18 +75,8 @@ export default function ChatLayout() {
 
   return (
     <div className="flex-1 flex flex-col h-full bg-background text-text-primary">
-
       {/* HEADER */}
-      <motion.div
-        initial={{ y: -12, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        className="px-8 py-4 border-b border-border bg-surface sticky top-19 z-40"
-      >
-        <h2 className="text-lg font-semibold text-text-primary">
-          Chat con el Asistente
-        </h2>
-      </motion.div>
-
+      <ChatHeader/>
       {/* CONTENEDOR GENERAL (Chat + Sidebar) */}
       <div className="flex flex-2 overflow-hidden">
         {/* CHAT */}
