@@ -3,27 +3,54 @@ import json
 from datetime import datetime
 import time
 import uuid
+import os
 
 API_URL = "http://localhost:8000/chat/"  
+LOG_FILE = "agent_test.log"
 
+
+def create_log_entry(group_name: str, question: str, raw: dict, response_text: str, ok: bool):
+    """Escribe una entrada detallada en agent_test.log."""
+    if not os.path.exists(LOG_FILE):
+        # Crear archivo con encabezado
+        with open(LOG_FILE, "w", encoding="utf-8") as f:
+            f.write("=== LOG DE PRUEBAS DEL AGENTE ===\n\n")
+
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    entry = (
+        f"\n[{timestamp}] --- {group_name} ---\n"
+        f"📩 Pregunta: {question}\n"
+        f"📡 RAW JSON: {json.dumps(raw, ensure_ascii=False)}\n"
+        f"💬 Respuesta Normalizada: {response_text}\n"
+        f"✔️ Estado: {'OK' if ok else 'FAIL'}\n"
+        f"{'-'*80}\n"
+    )
+
+    with open(LOG_FILE, "a", encoding="utf-8") as f:
+        f.write(entry)
 
 def send(message, session_id=None):
     if session_id is None:
         session_id = f"test_{uuid.uuid4()}"
-    """Envía un mensaje al backend y retorna el texto."""
+
     payload = {
         "session_id": session_id,
         "message": message
     }
+
     response = requests.post(API_URL, json=payload)
-    
+
     try:
-        data = response.json()
-    except Exception:
+        raw = response.json()
+    except:
         print("❌ Respuesta no JSON:", response.text)
         raise
-    print("RAW RESPONSE:", data)
-    return data.get("response", "")
+
+    text = raw.get("response", "") or ""
+
+    return text, raw
+
 
 
 def assert_no_hallucination(resp, test_name):
@@ -270,16 +297,30 @@ if __name__ == "__main__":
 
     for group in TESTS:
         group_name = group["name"]
+
         for question in group["tests"]:
-            resp = send(question)
 
+            # 👉 enviar mensaje
+            resp_text, raw_json = send(question)
+
+            # 👉 validaciones
             ok = True
-            ok &= assert_no_hallucination(resp, group_name)
-            ok &= assert_respects_kb(resp, group_name)
+            ok &= assert_no_hallucination(resp_text, group_name)
+            ok &= assert_respects_kb(resp_text, group_name)
 
-            print_result(ok, f"{group_name} → {question}", resp)
+            # 👉 imprimir en consola
+            print_result(ok, f"{group_name} → {question}", resp_text)
 
-            # 👇 Espera 10 segundos entre cada request
-            time.sleep(10)
+            # 👉 guardar log
+            create_log_entry(
+                group_name=group_name,
+                question=question,
+                raw=raw_json,
+                response_text=resp_text,
+                ok=ok
+            )
+
+            # 👉 evitar rate limits, en este caso se ejecuta cada 10 segundos
+            time.sleep(8)
 
     print("\n==== PRUEBAS COMPLETADAS ====\n")
