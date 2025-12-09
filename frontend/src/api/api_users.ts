@@ -1,4 +1,5 @@
 import { api } from "./api";
+import type { User } from "../types/User";
 
 // --- USERS ---
 export async function getUsers() {
@@ -6,12 +7,12 @@ export async function getUsers() {
   return res.data;
 }
 
-export async function createUser(data: any) {
+export async function createUser(data: User) {
   const res = await api.post("/users", data);
   return res.data;
 }
 
-export async function updateUser(userId: number, data: any) {
+export async function updateUser(userId: number, data: User) {
   const res = await api.put(`/users/${userId}`, data);
   return res.data;
 }

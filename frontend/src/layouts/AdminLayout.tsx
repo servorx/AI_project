@@ -2,14 +2,12 @@ import { useEffect, useState } from "react";
 import { getConversations } from "../api/api_conversation";
 import { getMessages } from "../api/api_messages";
 import { motion } from "framer-motion";
-import type { ConversationItem } from "../types/api/ConversationItem";
 import type { Message } from "../types/Message";
 import Skeleton from "../components/admin/Skeleton";
 // importar panel de usuarios
 import UsersPanel from "../components/admin/UserPanel";
 
 export default function AdminLayout() {
-  const [conversations, setConversations] = useState<ConversationItem[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [selected, setSelected] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
@@ -43,40 +41,10 @@ export default function AdminLayout() {
   return (
     <div className="flex h-full bg-background text-text-primary">
 
-      {/* SIDEBAR */}
-      <aside className="w-80 bg-surface border-r border-border p-4 overflow-auto">
-        <h3 className="font-semibold mb-3 text-text-primary">Conversaciones</h3>
-
-        {conversations.map((c) => {
-          const isActive = c.id === selected;
-
-          return (
-            <motion.div
-              key={c.id}
-              whileHover={{ scale: 1.02 }}
-              onClick={() => loadMsgs(c.id)}
-              transition={{ duration: 0.15 }}
-              className={`
-                p-3 rounded-lg cursor-pointer mb-2 shadow-sm
-                ${isActive ? "bg-primary/20 border border-primary" : "bg-surface hover:bg-surface/70 border border-border"}
-              `}
-            >
-              <div className="font-medium text-text-primary">
-                {c.user_phone || c.session_id}
-              </div>
-
-              <div className="text-xs text-text-secondary mt-1">
-                {new Date(c.created_at).toLocaleString()}
-              </div>
-            </motion.div>
-          );
-        })}
-      </aside>
-
       {/* MAIN PANEL */}
       <main className="flex-1 p-0 overflow-auto bg-background">
 
-        {/* ⬅️ AQUÍ ES LO NUEVO: selector de pestañas */}
+        {/* selector de pestañas */}
         <div className="flex space-x-4 px-6 py-3 border-b border-border bg-surface">
           <button
             onClick={() => setTab("conversations")}

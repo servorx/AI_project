@@ -4,7 +4,7 @@ import { getRecommendations } from "../../api/api_recomendations";
 import type { Product } from "../../types/Product";
 import type { Guide } from "../../types/Guide";
 
-export default function Sidebar() {
+export default function ChatSidebar() {
   const [products, setProducts] = useState<Product[]>([]);
   const [guides, setGuides] = useState<Guide[]>([]);
   const [loading, setLoading] = useState(true);

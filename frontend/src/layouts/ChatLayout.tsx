@@ -3,7 +3,7 @@ import ChatBubble from "../components/chat/ChatBubble";
 import { timeNowISO } from "../utils/Time";
 import { postChatMessage } from "../api/api";
 import { AnimatePresence, motion } from "framer-motion";
-import Sidebar from "../components/chat/Sidebar";
+import ChatSidebar from "../components/chat/ChatSidebar";
 import InputChat from "../components/chat/InputChat";
 import type { Message } from "../types/Message";
 // generar id aleatorio para una sesion de chat web
@@ -77,7 +77,7 @@ export default function ChatLayout() {
     <div className="flex-1 flex flex-col h-full bg-background text-text-primary">
       {/* HEADER */}
       <ChatHeader/>
-      {/* CONTENEDOR GENERAL (Chat + Sidebar) */}
+      {/* CONTENEDOR GENERAL (Chat + ChatSidebar) */}
       <div className="flex flex-2 overflow-hidden">
         {/* CHAT */}
         <div
@@ -102,8 +102,8 @@ export default function ChatLayout() {
           )}
         </div>
 
-        {/* SIDEBAR */}
-        <Sidebar />
+        {/* ChatSidebar */}
+        <ChatSidebar />
       </div>
       <div className="sticky bottom-0 left-0 right-0 bg-surface z-50">
         <InputChat
