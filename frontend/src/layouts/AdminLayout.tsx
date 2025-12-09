@@ -4,13 +4,17 @@ import { getMessages } from "../api/api_messages";
 import { motion } from "framer-motion";
 import type { ConversationItem } from "../types/api/ConversationItem";
 import type { Message } from "../types/Message";
-import Skeleton from "../components/Skeleton";
+import Skeleton from "../components/admin/Skeleton";
+// importar panel de usuarios
+import UsersPanel from "../components/admin/UserPanel";
 
 export default function AdminLayout() {
   const [conversations, setConversations] = useState<ConversationItem[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [selected, setSelected] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
+  // crud de usuarios 
+  const [tab, setTab] = useState<"conversations" | "users">("conversations");
 
   async function loadMsgs(id: number) {
     setLoading(true); // empieza el skeleton
@@ -70,44 +74,77 @@ export default function AdminLayout() {
       </aside>
 
       {/* MAIN PANEL */}
-      <main className="flex-1 p-6 overflow-auto bg-background">
-        <h3 className="font-semibold mb-4 text-text-primary">Mensajes</h3>
+      <main className="flex-1 p-0 overflow-auto bg-background">
 
-        {!selected && (
-          <p className="text-text-secondary text-sm">
-            Selecciona una conversación
-          </p>
+        {/* ⬅️ AQUÍ ES LO NUEVO: selector de pestañas */}
+        <div className="flex space-x-4 px-6 py-3 border-b border-border bg-surface">
+          <button
+            onClick={() => setTab("conversations")}
+            className={`font-medium transition ${
+              tab === "conversations" ? "text-primary border-b-2 border-primary" : "text-text-secondary"
+            }`}
+          >
+            Conversaciones
+          </button>
+
+          <button
+            onClick={() => setTab("users")}
+            className={`font-medium transition ${
+              tab === "users" ? "text-primary border-b-2 border-primary" : "text-text-secondary"
+            }`}
+          >
+            Usuarios
+          </button>
+        </div>
+
+        {/* PANEL DE CONVERSACIONES */}
+        {tab === "conversations" && (
+          <div className="p-6">
+
+            <h3 className="font-semibold mb-4 text-text-primary">Mensajes</h3>
+
+            {!selected && (
+              <p className="text-text-secondary text-sm">
+                Selecciona una conversación
+              </p>
+            )}
+
+            {loading && <Skeleton lines={4} />}
+
+            {!loading && messages.map((m) => {
+              const isAssistant = m.role === "assistant";
+              return (
+                <motion.div
+                  key={m.id}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className={`
+                    p-4 rounded-xl mb-3 shadow-md border
+                    ${isAssistant
+                      ? "bg-surface border-border"
+                      : "bg-primary/20 border-primary"
+                    }
+                  `}
+                >
+                  <div className="text-xs text-text-secondary">
+                    {m.role} • {(m.created_at ? new Date(m.created_at).toLocaleString() : "—")}
+                  </div>
+
+                  <div className="mt-2 whitespace-pre-line text-text-primary">
+                    {m.content}
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
         )}
-        {/* muestra el skeleton mientras carga */}
-        {loading && <Skeleton lines={4} />} 
 
-        {!loading && messages.map((m) => {
-          const isAssistant = m.role === "assistant";
-          return (
-            <motion.div
-              key={m.id}
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.2 }}
-              className={`
-                p-4 rounded-xl mb-3 shadow-md border
-                ${isAssistant
-                  ? "bg-surface border-border"
-                  : "bg-primary/20 border-primary"
-                }
-              `}
-            >
-              <div className="text-xs text-text-secondary">
-                {/* se maneja el caso de que el mensaje no tenga fecha de creacion */}
-                {m.role} • {(m.created_at ? new Date(m.created_at).toLocaleString() : "—")}
-              </div>
+        {/* PANEL DE USUARIOS */}
+        {tab === "users" && (
+          <UsersPanel />
+        )}
 
-              <div className="mt-2 whitespace-pre-line text-text-primary">
-                {m.content}
-              </div>
-            </motion.div>
-          );
-        })}
       </main>
     </div>
   );

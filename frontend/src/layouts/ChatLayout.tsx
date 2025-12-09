@@ -1,14 +1,14 @@
 import { useEffect, useRef, useState } from "react";
-import ChatBubble from "../components/ChatBubble";
+import ChatBubble from "../components/chat/ChatBubble";
 import { timeNowISO } from "../utils/Time";
 import { postChatMessage } from "../api/api";
 import { AnimatePresence, motion } from "framer-motion";
-import Sidebar from "../components/Sidebar";
-import InputChat from "../components/InputChat";
+import Sidebar from "../components/chat/Sidebar";
+import InputChat from "../components/chat/InputChat";
 import type { Message } from "../types/Message";
 // generar id aleatorio para una sesion de chat web
 import { v4 as uuid } from "uuid";
-import ChatHeader from "../components/ChatHeader";
+import ChatHeader from "../components/chat/ChatHeader";
 
 export default function ChatLayout() {
   const [messages, setMessages] = useState<Message[]>([

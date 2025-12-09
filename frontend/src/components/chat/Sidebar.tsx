@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { getRecommendations } from "../api/api_recomendations";
-import type { Product } from "../types/Product";
-import type { Guide } from "../types/Guide";
+import { getRecommendations } from "../../api/api_recomendations";
+import type { Product } from "../../types/Product";
+import type { Guide } from "../../types/Guide";
 
 export default function Sidebar() {
   const [products, setProducts] = useState<Product[]>([]);

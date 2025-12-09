@@ -52,7 +52,6 @@ def send(message, session_id=None):
     return text, raw
 
 
-
 def assert_no_hallucination(resp, test_name):
     """Valida frases prohibidas o contenido inventado."""
     forbidden = [
