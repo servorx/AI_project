@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, func
+from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, func, Boolean
 from sqlalchemy.orm import relationship, declarative_base
 
 Base = declarative_base()
@@ -34,7 +34,8 @@ class User(Base):
 
     # informacion general del usuario
     phone = Column(String(32), index=True, nullable=True)
-    channel = Column(String(32), nullable=True)   # web / whatsapp
+    channel = Column(String(32), nullable=True, default="whatsapp")   # web / whatsapp
+    profile_completed = Column(Boolean, default=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
     total_messages = Column(Integer, default=0)

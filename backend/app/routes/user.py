@@ -27,18 +27,22 @@ def create_user(user: dict, db: Session = Depends(get_db)):
     return u
 
 # Editar usuario
-@router.put("/{user_id}")
-def update_user(user_id: int, user_data: dict, db: Session = Depends(get_db)):
-    u = db.query(User).filter(User.id == user_id).first()
-    if not u:
+@router.put("/update_profile/{phone}")
+def update_profile(phone: str, data: dict, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.phone == phone).first()
+    if not user:
         return {"error": "User not found"}
 
-    for k, v in user_data.items():
-        setattr(u, k, v)
+    for k, v in data.items():
+        setattr(user, k, v)
+
+    # Calcular si ya completó todo
+    user.profile_completed = bool(user.name and user.email and user.address)
 
     db.commit()
-    db.refresh(u)
-    return u
+    db.refresh(user)
+    return user
+
 
 # Eliminar usuario
 @router.delete("/{user_id}")
