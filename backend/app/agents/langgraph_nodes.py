@@ -1,9 +1,11 @@
 # imports de librerias
+import asyncio
 from typing import List, Dict, Any
+from app.dependencies.gemini_client import GeminiClient
 from pydantic import BaseModel, Field
 
 # imports de servicios
-from backend.app.services.memory_service import MemoryService
+from app.services.memory_service import MemoryService
 from app.services.rag_service import RAGService
 from app.prompts.system_prompt import SYSTEM_PROMPT
 
@@ -61,7 +63,7 @@ RESPONDER SIGUIENDO ESTAS REGLAS:
 - No inventes.
 - Si falta información, pide aclaración.
 - Responde en español neutro (Colombia).
-s
+
 RESPUESTA (no dejes esta sección vacía, responde con al menos 2 frases completas):
 """
     return state
@@ -155,7 +157,6 @@ async def node_llm(state: AgentState) -> AgentState:
     # quitar el comendario para debug de langgraph 
     # state.llm_response = "[LANGGRAPH OKADFKLN;SDHJVDFSDFLJKVSNFDLKVNSDJFLKVSNDFLVSNDFJLVSDNFKV] " + response
 
-    # TODO: revisar si esta es la fuente del error de la memoria de gemini 
     # guardar memoria (opcional)
     MemoryService.add_message(state.session_id, "assistant", state.llm_response)
     return state

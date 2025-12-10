@@ -1,13 +1,11 @@
-import asyncio
-from typing import List, Dict, Any
 import logging
 from enum import Enum
 
-from backend.app.agents.langgraph_nodes import node_load_memory, node_retrieve, node_build_prompt, node_llm, node_fallback, AgentState
+from app.agents.langgraph_nodes import node_intent_detection, node_load_memory, node_retrieve, node_build_prompt, node_llm, node_fallback, AgentState
 from langgraph.graph import StateGraph, END
 
 from app.services.rag_service import RAGService
-from backend.app.services.memory_service import MemoryService
+from app.services.memory_service import MemoryService
 from app.dependencies.gemini_client import GeminiClient
 from app.config import settings
 
@@ -40,10 +38,12 @@ class LangGraphAgent:
         graph.add_node("build_prompt", node_build_prompt)
         graph.add_node("llm", node_llm)
         graph.add_node("fallback", node_fallback)
+        graph.add_node("intent_detection", node_intent_detection)
 
         # edges / flujo
         graph.set_entry_point("load_memory")
-        graph.add_edge("load_memory", "retrieve")
+        graph.add_edge("load_memory", "intent_detection")
+        graph.add_edge("intent_detection", "retrieve")
         graph.add_edge("retrieve", "build_prompt")
         graph.add_edge("build_prompt", "llm")
         graph.add_edge("llm", "fallback")
