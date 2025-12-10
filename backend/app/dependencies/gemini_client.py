@@ -6,30 +6,33 @@ import google.api_core.exceptions as google_exceptions
 
 # funcion para poder extraer texto de la respuesta de Gemini y normalizar todas sus respuetas 
 def extract_text(data: dict) -> str:
-    # Caso 1: formato clásico con candidates
-    if "candidates" in data and len(data["candidates"]) > 0:
-        cand = data["candidates"][0]
+    # 1. modelos nuevos: "text"
+    if "text" in data and isinstance(data["text"], str):
+        return data["text"]
 
-        # Si trae content con parts
-        content = cand.get("content")
-        if content and "parts" in content:
-            parts = content["parts"]
-            return "".join(p.get("text", "") for p in parts)
+    # 2. formato: "outputText"
+    if "outputText" in data:
+        return data["outputText"]
 
-        # Gemini 1.5 A veces trae directamente parts
+    # 3. modelos clásicos con candidates
+    candidates = data.get("candidates", [])
+    if candidates:
+        cand = candidates[0]
+
+        # parts dentro de content
+        if "content" in cand and "parts" in cand["content"]:
+            return "".join(p.get("text", "") for p in cand["content"]["parts"])
+
+        # parts directos
         if "parts" in cand:
             return "".join(p.get("text", "") for p in cand["parts"])
 
-    # Caso 2: formato con content en raíz
+    # 4. formato: content -> parts
     if "content" in data and "parts" in data["content"]:
         return "".join(p.get("text", "") for p in data["content"]["parts"])
 
-    # Caso 3: respuestas fallback
-    return (
-        data.get("outputText")
-        or data.get("text")
-        or ""
-    )
+    # 5. fallback final (por seguridad)
+    return ""
 
 class GeminiClient:
     def __init__(self, api_key: str = None, model: str = None, embedding_model: str = None):
@@ -97,35 +100,35 @@ class GeminiClient:
                     }
                 }
 
-                # # REINTENTOS 429 APLICADOS POR TEXTO
-                # for attempt in range(5):
-                #     try:
-                #         resp = await client.post(url, headers=self._headers, json=payload)
-                #         resp.raise_for_status()
-                #         data = resp.json()
-                #         emb = data["embedding"]["values"]
-                #         embeddings.append(emb)
-                #         break  # salir del ciclo si tuvo éxito
+                # REINTENTOS 429 APLICADOS POR TEXTO
+                for attempt in range(5):
+                    try:
+                        resp = await client.post(url, headers=self._headers, json=payload)
+                        resp.raise_for_status()
+                        data = resp.json()
+                        emb = data["embedding"]["values"]
+                        embeddings.append(emb)
+                        break  # salir del ciclo si tuvo éxito
 
-                #     except httpx.HTTPStatusError as e:
-                #         # Si es 429, hacer reintento exponencial
-                #         if e.response.status_code == 429:
-                #             wait_time = 2 ** attempt
-                #             print(f"[Gemini] 429 recibido. Reintentando en {wait_time}s...")
-                #             await asyncio.sleep(wait_time)
-                #             continue
-                #         else:
-                #             raise RuntimeError(
-                #                 f"Gemini API returned {e.response.status_code}: {e.response.text}"
-                #             )
+                    except httpx.HTTPStatusError as e:
+                        # Si es 429, hacer reintento exponencial
+                        if e.response.status_code == 429:
+                            wait_time = 2 ** attempt
+                            print(f"[Gemini] 429 recibido. Reintentando en {wait_time}s...")
+                            await asyncio.sleep(wait_time)
+                            continue
+                        else:
+                            raise RuntimeError(
+                                f"Gemini API returned {e.response.status_code}: {e.response.text}"
+                            )
 
-                #     except google_exceptions.ResourceExhausted:
-                #         wait_time = 2 ** attempt
-                #         print(f"[Gemini] 429 (Google) recibido. Reintentando en {wait_time}s...")
-                #         await asyncio.sleep(wait_time)
+                    except google_exceptions.ResourceExhausted:
+                        wait_time = 2 ** attempt
+                        print(f"[Gemini] 429 (Google) recibido. Reintentando en {wait_time}s...")
+                        await asyncio.sleep(wait_time)
 
-                # else:
-                #     # Si nunca hizo break → falló después de 5 intentos
-                #     raise RuntimeError("Gemini API agotada incluso después de reintentos.")
+                else:
+                    # Si nunca hizo break → falló después de 5 intentos
+                    raise RuntimeError("Gemini API agotada incluso después de reintentos.")
 
         return embeddings
