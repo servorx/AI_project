@@ -1,124 +1,28 @@
 import asyncio
 from typing import List, Dict, Any
 import logging
+from enum import Enum
 
-from pydantic import BaseModel, Field
+from backend.app.agents.langgraph_nodes import node_load_memory, node_retrieve, node_build_prompt, node_llm, node_fallback, AgentState
 from langgraph.graph import StateGraph, END
 
 from app.services.rag_service import RAGService
-from app.services.memory_service import MemoryService
+from backend.app.services.memory_service import MemoryService
 from app.dependencies.gemini_client import GeminiClient
-from app.prompts.system_prompt import SYSTEM_PROMPT
 from app.config import settings
 
+# obtiene el loger con el nombre en especifico
 logger = logging.getLogger(__name__)
 
-# definicion del estado del agente para LangGraph
-class AgentState(BaseModel):
-    session_id: str 
-    user_message: str
-    memory: List[Dict[str, str]] = Field(default_factory=list)
-    retrieved_docs: List[Dict[str, Any]] = Field(default_factory=list)
-    prompt: str = ""
-    llm_response: str = ""
-
-# deficioon de los nodos del grafo
-async def node_load_memory(state: AgentState) -> AgentState:
-    memory = MemoryService.get_memory(state.session_id)
-    state.memory = memory
-    return state
-
-async def node_retrieve(state: AgentState) -> AgentState:
-    rag = RAGService()
-    docs = await rag.retrieve(state.user_message, top_k=3)
-    state.retrieved_docs = docs
-    return state
-
-async def node_build_prompt(state: AgentState) -> AgentState:
-    # memoria previa
-    memory_block = "\n".join([f"{m['role'].upper()}: {m['text']}" for m in state.memory])
-
-    # docs
-    ctx_parts = []
-    for d in state.retrieved_docs:
-        txt = d.get("text") or (d.get("payload") or {}).get("text", "")
-        src = d.get("id") or (d.get("payload") or {}).get("filename") or "fuente"
-        ctx_parts.append(f"[{src}]\n{txt}")
-
-    kb_context = "\n\n".join(ctx_parts) if ctx_parts else "No hay contexto relevante en KB."
-
-    # se puede implementar en el prompt de langgraph 
-    # - Cierra con "Fuentes: [...]" indicando las fuentes usadas.
-    # pero solo para modo de desarrollo porque esto en realidad no es necesario
-    source_option = "Fuentes: [...]" if settings.SHOW_SOURCES else ""
-    state.prompt = f"""
-{SYSTEM_PROMPT}
-
-CONVERSACIÓN PREVIA:
-{memory_block}
-
-CONTEXT (RAG):
-{kb_context}
-
-USUARIO:
-{state.user_message}
-
-RESPONDER SIGUIENDO ESTAS REGLAS:
-- Utiliza el contexto si existe.
-- No inventes.
-- Si falta información, pide aclaración.
-- Responde en español neutro (Colombia).
-{source_option}
-
-RESPUESTA (no dejes esta sección vacía, responde con al menos 2 frases completas):
-"""
-    return state
-
-# nuevo nodo para la implementacion de fallbacks, garantiza que el agente NUNCA devuelva una respuesta vacía.
-async def node_fallback(state: AgentState) -> AgentState:
-    response = state.llm_response.strip()
-
-    if not response:
-        if state.retrieved_docs:
-            response = (
-                "Estoy revisando tu consulta con la información disponible, "
-                "pero necesito un poco más de detalles para darte una recomendación precisa."
-            )
-        else:
-            response = (
-                "No encontré información en la base de conocimientos para tu consulta. "
-                "¿Puedes darme más detalles?"
-            )
-
-    state.llm_response = response
-    return state
-
-
-async def node_llm(state: AgentState) -> AgentState:
-    print("=== PROMPT ENVIADO AL LLM ===")
-    print(state.prompt)
-    print("==============================")
-    gem = GeminiClient()
-    try:
-        response = await asyncio.wait_for(
-            gem.generate_text(state.prompt, max_tokens=512, temperature=0.2),
-            timeout=20
-        )
-    except asyncio.TimeoutError:
-        response = "Lo siento, tuve un problema con el servidor (timeout)."
-
-    # proteger contra None o vacío
-    if not response or not response.strip():
-        response = ""
-
-    state.llm_response = response
-    # quitar el comendario para debug de langgraph 
-    # state.llm_response = "[LANGGRAPH OKADFKLN;SDHJVDFSDFLJKVSNFDLKVNSDJFLKVSNDFLVSNDFJLVSDNFKV] " + response
-
-    # TODO: revisar si esta es la fuente del error de la memoria de gemini 
-    # guardar memoria (opcional)
-    MemoryService.add_message(state.session_id, "assistant", state.llm_response)
-    return state
+# define un enum para los intent de los agentes
+class Intent(str, Enum):
+    ASK_PRODUCT_INFO = "ask_product_info"
+    ASK_PRICE = "ask_price"
+    ASK_RECOMMENDATION = "ask_recommendation"
+    GREETING = "greeting"
+    GOODBYE = "goodbye"
+    SMALLTALK = "smalltalk"
+    UNKNOWN = "unknown"
 
 # constructor de agente usando los nodos y flujo definidos
 class LangGraphAgent:

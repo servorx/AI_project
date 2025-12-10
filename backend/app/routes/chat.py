@@ -28,20 +28,22 @@ async def chat_endpoint(
             if parsed.get("intent") == "update_profile":
                 phone = request.user_phone or request.session_id
                 # actualiza el perfil del usuario en la base de datos
-                updated_user = UserService.update_profile(
-                    db=db,
-                    phone=phone,
-                    data=parsed["data"]
-                )
-
-                if not updated_user:
-                    return ChatResponse(
-                        response="No encontré tu usuario para actualizar 🥲"
+                try:
+                    updated = UserService.update_profile(
+                        db=db,
+                        phone=phone,
+                        data=parsed["data"]
                     )
+                except ValueError as ve:
+                    if str(ve) == "invalid_email":
+                        return ChatResponse(response="Ese correo no es válido 😊 ¿Puedes revisarlo?")
+                    if str(ve) == "invalid_address":
+                        return ChatResponse(response="La dirección debe tener al menos 5 caracteres.")
 
-                return ChatResponse(
-                    response="Perfecto, ya tengo tu información 😊"
-                )
+                if not updated:
+                    return ChatResponse(response="No encontré tu usuario para actualizar 🥲")
+
+                return ChatResponse(response="Perfecto, ya tengo tu información 😊")
         except:
             pass
         # -------------------------------------
