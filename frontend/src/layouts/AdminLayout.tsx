@@ -83,7 +83,7 @@ export default function AdminLayout() {
 
         {/* PANEL DE CONVERSACIONES */}
         {tab === "conversations" && (
-          <div className="p-6">
+          <div className="pl-6 pr-6 pt-6 pb-0">
             <h3 className="font-semibold mb-4 text-text-primary">Mensajes</h3>
 
             {!selected && (

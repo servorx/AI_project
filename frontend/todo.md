@@ -9,3 +9,13 @@ actualizar el nombre de forma dinamica en las conversaciones
 establecer un orden de flujo de LLM como si fuera una persona
 
 edición/moderación de mensajes y usuarios para el bkacend y el frontend
+
+maximas de grace
+
+mejorar el frontend
+
+hacer el diagrama de flujo 
+
+mejorar el prompt de LLM 
+
+redis y socket.io 

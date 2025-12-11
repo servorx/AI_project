@@ -178,7 +178,7 @@ RECOMENDACIONES DE TECLADOS POR USO
 ## E. PREMIUM / HIGH END
 - **Leopold FC900R** – sensación sólida y stock switches de alta calidad.
 - **Realforce / Topre boards** – electro-capacitivo (Topre), sensación única.
-- **HHKB Professional** – diseño icónico y minimalista.
+- **HHKB Professional** – diseño icónico y minimalista.p-6
 
 TECLADOS SEGÚN PRESUPUESTO
 
