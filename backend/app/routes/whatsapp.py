@@ -132,6 +132,7 @@ async def receive_message(request: Request, db: Session = Depends(get_db)):
             action_json = match.group(1).strip()
             data = json.loads(action_json)
 
+            # proceso de intencion de actualización de perfil
             if data.get("intent") == "update_profile":
                 UserService.update_profile(db, from_phone, data.get("data", {}))
 
@@ -150,6 +151,40 @@ async def receive_message(request: Request, db: Session = Depends(get_db)):
                 db.add(assistant_msg)
                 db.commit()
 
+                wa = WhatsAppService()
+                await wa.send_text(to_phone=from_phone, text=clean_response)
+
+                return {"status": "ok"}
+            # proceso de intencion de compra de teclado
+            if data.get("intent") == "purchase_recommendation":
+                product = data.get("data", {})
+
+                # Validar campos mínimos para seguridad
+                required = ["model", "brand", "switch", "price", "url"]
+                if not all(key in product for key in required):
+                    print("ACTION purchase_recommendation incompleto:", product)
+                    return {"status": "invalid_purchase_action"}
+
+                # Construir mensaje limpio para el usuario
+                clean_response = (
+                    f"¡Excelente elección! 🎉\n\n"
+                    f"Aquí tienes la información del teclado que seleccionaste:\n\n"
+                    f"🛒 *{product['model']}* ({product['brand']})\n"
+                    f"🔧 Switch: {product['switch']}\n"
+                    f"💵 Precio: {product['price']}\n\n"
+                    f"Puedes comprarlo aquí:\n{product['url']}"
+                )
+
+                # Guardar mensaje del asistente en BD
+                assistant_msg = Message(
+                    conversation_id=conv.id,
+                    role="assistant",
+                    content=clean_response
+                )
+                db.add(assistant_msg)
+                db.commit()
+
+                # Enviar por WhatsApp
                 wa = WhatsAppService()
                 await wa.send_text(to_phone=from_phone, text=clean_response)
 
