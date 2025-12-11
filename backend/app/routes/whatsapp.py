@@ -11,6 +11,7 @@ from app.models.db_models import Conversation, Message
 import re
 import json
 from app.services.user_service import UserService
+import hashlib
 
 router = APIRouter()
 
@@ -33,36 +34,63 @@ async def receive_message(request: Request, db: Session = Depends(get_db)):
     body = await request.json()
     print("WA webhook body:", body)
 
+    # validar estructura del webhook
     try:
         entry = body["entry"][0]
         changes = entry["changes"][0]
         value = changes["value"]
-        messages = value.get("messages", [])
     except:
         return JSONResponse({"status": "ignored"})
 
+    # IGNORAR EVENTOS DE ESTADO (sent/delivered/read)
+    if "statuses" in value:
+        return JSONResponse({"status": "ignored_status"})
+
+    messages = value.get("messages", [])
     if not messages:
         return JSONResponse({"status": "no_messages"})
 
     msg = messages[0]
+
+    #  IGNORAR MENSAJES QUE NO SEAN TEXT O INTERACTIVE
+    msg_type = msg.get("type")
+
+    if msg_type not in ("text", "interactive"):
+        return JSONResponse({"status": "ignored_non_text"})
+
     msg_id = msg.get("id")
     from_phone = msg.get("from")
 
-    # Evitar duplicados
+    # IGNORAR MENSAJES DEL PROPIO BOT
+    if from_phone == value["metadata"]["phone_number_id"]:
+        return JSONResponse({"status": "ignored_self"})
+
+    # PROTECCIÓN ANTI-DUPLICADOS (por ID)
     exists = db.query(Message).filter_by(external_id=msg_id).first()
     if exists:
         return JSONResponse({"status": "duplicate_ignored"})
 
-    # Obtener texto del mensaje
+    # 6. EXTRAER CONTENIDO DEL MENSAJE
     text = ""
-    if msg.get("text"):
+    if msg_type == "text":
         text = msg["text"]["body"]
-    elif msg.get("type") == "interactive":
+    elif msg_type == "interactive":
         interactive = msg["interactive"]
         if interactive["type"] == "button_reply":
             text = interactive["button_reply"].get("title")
 
-    # Crear conversación si no existe
+    # HASH ANTI-DUPLICADOS (por contenido exacto)
+    content_hash = hashlib.md5(text.encode()).hexdigest()
+
+    dupe_text = db.query(Message).filter_by(
+        conversation_id=from_phone,
+        content_hash=content_hash
+    ).first()
+
+    if dupe_text:
+        return JSONResponse({"status": "duplicate_text"})
+
+    # CREAR O OBTENER CONVERSACIÓN
     session_id = from_phone
 
     conv = db.query(Conversation).filter_by(session_id=session_id).first()
@@ -72,17 +100,20 @@ async def receive_message(request: Request, db: Session = Depends(get_db)):
         db.commit()
         db.refresh(conv)
 
-    # Guardar mensaje del usuario
+    # 9. GUARDAR MENSAJE DEL USUARIO
     user_msg = Message(
         conversation_id=conv.id,
         role="user",
         content=text,
-        external_id=msg_id
+        external_id=msg_id,
+        content_hash=content_hash
     )
     db.add(user_msg)
     db.commit()
 
-    # Llamar al agente
+    # ---------------------------------------------------------
+    # 10. LLAMAR AL AGENTE
+    # ---------------------------------------------------------
     agent_service = CommercialAgentService(session_id=session_id)
     try:
         resp_text = await agent_service.answer(text)
@@ -90,7 +121,9 @@ async def receive_message(request: Request, db: Session = Depends(get_db)):
         print("ERROR EN AGENTE WHATSAPP:", e)
         raise e
 
-    # Revisar si contiene <ACTION>
+    # ---------------------------------------------------------
+    # 11. DETECTAR <ACTION> (UPDATE PROFILE)
+    # ---------------------------------------------------------
     pattern = r"<ACTION>(.*?)</ACTION>"
     match = re.search(pattern, resp_text, re.DOTALL)
 
@@ -117,7 +150,6 @@ async def receive_message(request: Request, db: Session = Depends(get_db)):
                 db.add(assistant_msg)
                 db.commit()
 
-                # Enviar respuesta
                 wa = WhatsAppService()
                 await wa.send_text(to_phone=from_phone, text=clean_response)
 
@@ -126,9 +158,9 @@ async def receive_message(request: Request, db: Session = Depends(get_db)):
         except Exception as e:
             print("ERROR PARSEANDO ACTION:", e)
 
-    # -------------------------
-    # 3. Respuesta normal
-    # -------------------------
+    # ---------------------------------------------------------
+    # 12. RESPUESTA NORMAL DEL AGENTE
+    # ---------------------------------------------------------
     assistant_msg = Message(
         conversation_id=conv.id,
         role="assistant",

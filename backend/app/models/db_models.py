@@ -17,9 +17,10 @@ class Message(Base):
     __tablename__ = "messages"
     id = Column(Integer, primary_key=True, index=True)
     conversation_id = Column(Integer, ForeignKey("conversations.id"), index=True)
-    role = Column(String(32), index=True)  # user | assistant | system
+    role = Column(String(16), index=True)  # user | assistant | system
     content = Column(Text)
     external_id = Column(String(128), index=True, nullable=True)
+    content_hash = Column(String(64), index=True, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
     conversation = relationship("Conversation", back_populates="messages")
