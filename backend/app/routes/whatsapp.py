@@ -7,6 +7,10 @@ from app.services.agent_service import CommercialAgentService
 from app.dependencies.db import get_db
 from sqlalchemy.orm import Session
 from app.models.db_models import Conversation, Message
+# para la parte de la actualización de datos del usuario
+import re
+import json
+from app.services.user_service import UserService
 
 router = APIRouter()
 
@@ -22,7 +26,6 @@ def verify_token(request: Request):
         return PlainTextResponse(content=challenge or "")
     
     return JSONResponse({"error": "Invalid verify token"}, status_code=403)
-
 
 # POST receive messages
 @router.post("/webhook")
@@ -67,6 +70,46 @@ async def receive_message(request: Request, db: Session = Depends(get_db)):
         db.add(conv)
         db.commit()
         db.refresh(conv)
+    # PARSER DE <ACTION> PARA UPDATE_PROFILE
+    pattern = r"<ACTION>(.*?)</ACTION>"
+    match = re.search(pattern, resp_text, re.DOTALL)
+
+    if match:
+        try:
+            # Extraer JSON
+            action_json = match.group(1).strip()
+            data = json.loads(action_json)
+
+            # PROCESO DE ACTUALIZACIÓN
+            if data.get("intent") == "update_profile":
+                UserService.update_profile(db, from_phone, data.get("data", {}))
+
+                # Guardar mensaje del asistente sin el JSON
+                assistant_msg = Message(
+                    conversation_id=conv.id,
+                    role="assistant",
+                    content="¡Gracias por brindarme esta información! 😊 Ahora puedo ayudarte mucho mejor. ¿Qué tipo de teclado mecánico estás buscando?"
+                )
+                db.add(assistant_msg)
+                db.commit()
+
+                # Enviar mensaje limpio al usuario
+                wa = WhatsAppService()
+                await wa.send_text(
+                    to_phone=from_phone,
+                    text="¡Gracias por brindarme esta información! 😊 Ahora puedo ayudarte mucho mejor. ¿Qué tipo de teclado mecánico estás buscando?"
+                )
+
+                return {"status": "ok"}
+
+        except Exception as e:
+            print("ERROR PARSEANDO ACTION:", e)
+            # si falla, simplemente continúa con flujo normal
+            pass
+
+    # ---------------------------------------------------------
+    # SI NO HAY <ACTION> → RESPUESTA NORMAL
+    # ---------------------------------------------------------
 
     # Guardar mensaje del usuario
     user_msg = Message(

@@ -2,7 +2,6 @@ import httpx
 from app.config import settings
 from fastapi import HTTPException
 
-# TODO: revisar si es necesario cambiar esto por otra ruta
 GRAPH_BASE = "https://graph.facebook.com/v17.0"
 
 class WhatsAppService:
