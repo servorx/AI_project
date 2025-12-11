@@ -14,8 +14,13 @@ class UserService:
     @staticmethod
     def update_profile(db: Session, phone: str, data: dict):
         user = db.query(User).filter(User.phone == phone).first()
+
+        # Si no existe -> se crea automáticamente
         if not user:
-            return None
+            user = User(phone=phone)
+            db.add(user)
+            db.commit()
+            db.refresh(user)
 
         # Validar email
         if "email" in data:
@@ -26,10 +31,11 @@ class UserService:
         if "address" in data and len(data["address"]) < 5:
             raise ValueError("invalid_address")
 
-        # Aplicar cambios seguros
+        # Aplicar cambios
         for k, v in data.items():
             setattr(user, k, v)
 
+        # Marcar si el perfil está completo
         user.profile_completed = bool(
             user.name and user.email and user.address
         )

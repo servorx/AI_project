@@ -48,11 +48,12 @@ async def receive_message(request: Request, db: Session = Depends(get_db)):
     msg_id = msg.get("id")
     from_phone = msg.get("from")
 
-    # Evitar duplicados (muy importante)
+    # Evitar duplicados
     exists = db.query(Message).filter_by(external_id=msg_id).first()
     if exists:
         return JSONResponse({"status": "duplicate_ignored"})
 
+    # Obtener texto del mensaje
     text = ""
     if msg.get("text"):
         text = msg["text"]["body"]
@@ -70,46 +71,6 @@ async def receive_message(request: Request, db: Session = Depends(get_db)):
         db.add(conv)
         db.commit()
         db.refresh(conv)
-    # PARSER DE <ACTION> PARA UPDATE_PROFILE
-    pattern = r"<ACTION>(.*?)</ACTION>"
-    match = re.search(pattern, resp_text, re.DOTALL)
-
-    if match:
-        try:
-            # Extraer JSON
-            action_json = match.group(1).strip()
-            data = json.loads(action_json)
-
-            # PROCESO DE ACTUALIZACIÓN
-            if data.get("intent") == "update_profile":
-                UserService.update_profile(db, from_phone, data.get("data", {}))
-
-                # Guardar mensaje del asistente sin el JSON
-                assistant_msg = Message(
-                    conversation_id=conv.id,
-                    role="assistant",
-                    content="¡Gracias por brindarme esta información! 😊 Ahora puedo ayudarte mucho mejor. ¿Qué tipo de teclado mecánico estás buscando?"
-                )
-                db.add(assistant_msg)
-                db.commit()
-
-                # Enviar mensaje limpio al usuario
-                wa = WhatsAppService()
-                await wa.send_text(
-                    to_phone=from_phone,
-                    text="¡Gracias por brindarme esta información! 😊 Ahora puedo ayudarte mucho mejor. ¿Qué tipo de teclado mecánico estás buscando?"
-                )
-
-                return {"status": "ok"}
-
-        except Exception as e:
-            print("ERROR PARSEANDO ACTION:", e)
-            # si falla, simplemente continúa con flujo normal
-            pass
-
-    # ---------------------------------------------------------
-    # SI NO HAY <ACTION> → RESPUESTA NORMAL
-    # ---------------------------------------------------------
 
     # Guardar mensaje del usuario
     user_msg = Message(
@@ -121,15 +82,53 @@ async def receive_message(request: Request, db: Session = Depends(get_db)):
     db.add(user_msg)
     db.commit()
 
-    # Llamar agente
+    # Llamar al agente
     agent_service = CommercialAgentService(session_id=session_id)
     try:
         resp_text = await agent_service.answer(text)
     except Exception as e:
         print("ERROR EN AGENTE WHATSAPP:", e)
-        raise e  # deja que FastAPI te muestre el error real en consola
+        raise e
 
-    # Guardar respuesta del asistente
+    # Revisar si contiene <ACTION>
+    pattern = r"<ACTION>(.*?)</ACTION>"
+    match = re.search(pattern, resp_text, re.DOTALL)
+
+    if match:
+        try:
+            action_json = match.group(1).strip()
+            data = json.loads(action_json)
+
+            if data.get("intent") == "update_profile":
+                UserService.update_profile(db, from_phone, data.get("data", {}))
+
+                clean_response = (
+                    "¡Gracias por brindarme esta información! 😊 "
+                    "Ahora puedo ayudarte mucho mejor. "
+                    "¿Qué tipo de teclado mecánico estás buscando?"
+                )
+
+                # Guardar mensaje limpio del asistente
+                assistant_msg = Message(
+                    conversation_id=conv.id,
+                    role="assistant",
+                    content=clean_response
+                )
+                db.add(assistant_msg)
+                db.commit()
+
+                # Enviar respuesta
+                wa = WhatsAppService()
+                await wa.send_text(to_phone=from_phone, text=clean_response)
+
+                return {"status": "ok"}
+
+        except Exception as e:
+            print("ERROR PARSEANDO ACTION:", e)
+
+    # -------------------------
+    # 3. Respuesta normal
+    # -------------------------
     assistant_msg = Message(
         conversation_id=conv.id,
         role="assistant",
@@ -138,7 +137,6 @@ async def receive_message(request: Request, db: Session = Depends(get_db)):
     db.add(assistant_msg)
     db.commit()
 
-    # Enviar WhatsApp
     wa = WhatsAppService()
     await wa.send_text(to_phone=from_phone, text=resp_text)
 
