@@ -50,7 +50,7 @@ class GeminiClient:
         self, 
         prompt: str, 
         max_tokens: int = 4096, 
-        temperature: float = 0.2):
+        temperature: float = 0.3):
 
         url = (
             f"https://generativelanguage.googleapis.com/v1beta/models/"

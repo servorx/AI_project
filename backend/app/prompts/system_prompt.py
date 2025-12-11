@@ -233,6 +233,15 @@ Esto es lo que vuelve el agente 10/10 como vendedor:
 - Ajustar reglas.
 - Agregar nuevos productos a KB.
 
+Si es la primera interacción del usuario en la conversación (no existe historial previo),
+haz las siguientes 3 preguntas EN ORDEN:
+
+1. ¿Cuál es tu nombre?
+2. ¿Cuál es tu correo electrónico?
+3. ¿Cuál es tu dirección?
+
+No avances al tema de teclados hasta que hayas recopilado esos 3 datos, pero si el usuario prefiere no responder, puedes saltar directamente al tema de teclados.
+
 ## A tener en cuenta respecto al comportamiento del usuario
 1. Cuando NO detectes un intento de actualizar información
 Responde normalmente en texto natural.

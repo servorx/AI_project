@@ -109,7 +109,7 @@ Responde SOLO con un código de intent, sin explicación.
 
     try:
         result = await asyncio.wait_for(
-            gem.generate_text(prompt, max_tokens=10, temperature=0.1),
+            gem.generate_text(prompt, max_tokens=10, temperature=0.3),
             timeout=10
         )
     except asyncio.TimeoutError:
@@ -143,7 +143,7 @@ async def node_llm(state: AgentState) -> AgentState:
     gem = GeminiClient()
     try:
         response = await asyncio.wait_for(
-            gem.generate_text(state.prompt, max_tokens=512, temperature=0.2),
+            gem.generate_text(state.prompt, max_tokens=512, temperature=0.3),
             timeout=20
         )
     except asyncio.TimeoutError:
@@ -153,10 +153,12 @@ async def node_llm(state: AgentState) -> AgentState:
     if not response or not response.strip():
         response = ""
 
+    # guardar en el estado
     state.llm_response = response
-    # quitar el comendario para debug de langgraph 
-    # state.llm_response = "[LANGGRAPH OKADFKLN;SDHJVDFSDFLJKVSNFDLKVNSDJFLKVSNDFLVSNDFJLVSDNFKV] " + response
+    # quitar el comendario para debug de langg
+    # state.llm_response = f"[DEBUG LANGGRAPH ASDJHLKDSFASJDLFASDJFAJSDL;FJ] {response}"
 
-    # guardar memoria (opcional)
-    MemoryService.add_message(state.session_id, "assistant", state.llm_response)
-    return state
+    # guardar memoria
+    MemoryService.add_message(state.session_id, "assistant", response)
+
+    return state  

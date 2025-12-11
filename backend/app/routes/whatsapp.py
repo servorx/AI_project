@@ -15,7 +15,6 @@ router = APIRouter()
 def verify_token(request: Request):
     params = request.query_params
 
-    mode = params.get("hub.mode")
     challenge = params.get("hub.challenge")
     token = params.get("hub.verify_token")
 
@@ -36,7 +35,6 @@ async def receive_message(request: Request, db: Session = Depends(get_db)):
         changes = entry["changes"][0]
         value = changes["value"]
         messages = value.get("messages", [])
-        metadata = value.get("metadata", {})
     except:
         return JSONResponse({"status": "ignored"})
 
@@ -84,8 +82,9 @@ async def receive_message(request: Request, db: Session = Depends(get_db)):
     agent_service = CommercialAgentService(session_id=session_id)
     try:
         resp_text = await agent_service.answer(text)
-    except:
-        resp_text = "Lo siento, ocurrió un error procesando tu mensaje."
+    except Exception as e:
+        print("ERROR EN AGENTE WHATSAPP:", e)
+        raise e  # deja que FastAPI te muestre el error real en consola
 
     # Guardar respuesta del asistente
     assistant_msg = Message(
