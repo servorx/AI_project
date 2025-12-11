@@ -27,7 +27,12 @@ class CommercialAgentService:
         if not message or not message.strip():
             return "¿Puedes escribir tu pregunta con más detalle?"
         try:
-            print("[LangGraphAgent] ejecutando run()")
+            # mostrar tipo de agente, LangGraph o Commercial
+            if isinstance(self.agent, LangGraphAgent):
+                print("[LangGraphAgent] ejecutando run()")
+            else:
+                print("[CommercialAgent] ejecutando run()")
+            # llamar al agente y esperar su respuesta
             response = await self.agent.run(message)
             # Validación: el agente **SIEMPRE** debe devolver un string
             if not isinstance(response, str):

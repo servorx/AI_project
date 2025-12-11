@@ -150,6 +150,102 @@ Los teclados mecánicos destacan por su durabilidad, personalización y experien
 * Varmilo VA87M (TKL premium)
 * Mode Envoy (alta gama)
 
+RECOMENDACIONES DE TECLADOS POR USO
+
+## A. GAMING
+- **SteelSeries Apex Pro TKL** – switches ajustables, RGB avanzado.
+- **Corsair K70 RGB MK.2** – muy popular por rendimiento y calidad.
+- **Razer Huntsman Elite** – óptico, respuesta rápida.
+- **HyperX Alloy Origins** – compacto, buena durabilidad.
+- **Logitech G Pro X** – TKL modular con switches intercambiables.
+
+## B. ESCRITURA / PRODUCTIVIDAD
+- **Keychron Q1 / Q2** – excelente tacto y customización.
+- **Leopold FC750R / FC980M** – sensación premium, silencioso.
+- **Ducky One 2 Horizon** – robusto y cómodo para largas sesiones.
+- **Filco Majestouch 2** – clásico sólido.
+
+## C. PORTÁTIL / COMPACTO
+- **Keychron K6 / K8** – Bluetooth, compatible Mac/Win.
+- **Varmilo VA68M** – sensación premium en 65%.
+- **Anne Pro 2** – 60% inalámbrico popular.
+
+## D. CUSTOM / MEJOR PARA MODIFICAR
+- **Glorious GMMK Pro** – hot-swap, mucha personalización.
+- **KBDFans KBD75 / Tofu** – comunidad custom amplia.
+- **Drop CTRL / ALT / SHIFT** – populares entre entusiastas.
+
+## E. PREMIUM / HIGH END
+- **Leopold FC900R** – sensación sólida y stock switches de alta calidad.
+- **Realforce / Topre boards** – electro-capacitivo (Topre), sensación única.
+- **HHKB Professional** – diseño icónico y minimalista.p-6
+
+TECLADOS SEGÚN PRESUPUESTO
+
+## Económicos (< $70)
+- Redragon K552
+- Tecware Phantom
+- Aula F2088
+
+## Gama Media ($70–$150)
+- Keychron K2 / K4
+- Ducky One 2 Mini
+- HyperX Alloy Origins
+
+## Gama Alta ($150–$300)
+- Keychron Q1
+- Glorious GMMK Pro
+- Leopold FC750R
+
+## Premium (> $300)
+- Realforce / Topre
+- HHKB Professional
+- Custom builds con PCB y case de aluminio
+
+TECLADOS SEGÚN TIPO DE CONEXIÓN
+
+### Cable RGB / USB
+- Corsair, Razer, Logitech series
+
+### Inalámbricos / Bluetooth
+- Keychron K2, K6, K8
+- Anne Pro 2
+
+### Multi-dispositivo
+- Logitech MX Keys (no mecánico clásico, pero usado por productividad)
+
+TABLA DE TECLADOS POPULARES — CON OPCIONES AMPLIAS
+
+| Categoría        | Modelo                           | Factor | Switch opcional           | Notas clave                                |
+|------------------|----------------------------------|--------|---------------------------|--------------------------------------------|
+| Gaming           | Corsair K70 RGB MK.2             | Full   | MX Red, Speed              | RGB, macros, sólida                        |
+| Gaming           | SteelSeries Apex Pro TKL         | TKL    | OmniPoint ajustables       | Ajusta fuerza de actuación                 |
+| Gaming           | Logitech G Pro X                 | TKL    | GX switches intercambiab. | Ideal esports                              |
+| Gaming           | Razer Huntsman Elite             | Full   | Opto-mecánico             | Respuesta ultra rápida                     |
+| Productivity     | Keychron Q1                     | TKL    | Gateron / LK               | Personalizable                             |
+| Productivity     | Ducky One 2 Horizon              | TKL    | Cherry MX                 | Popular en mecanografía                    |
+| Productivity     | Leopold FC750R                   | TKL    | Cherry / Topre            | Silencioso y robusto                       |
+| Compact          | Keychron K6                     | 65%    | Gateron / LK              | Bluetooth                                  |
+| Compact          | Anne Pro 2                     | 60%    | Gateron                   | Inalámbrico                                |
+| Compact          | Varmilo VA68M                   | 65%    | Cherry / Gateron          | Construcción premium                       |
+| Custom           | Glorious GMMK Pro               | TKL    | Hot-swap                  | Muy modular                                |
+| Custom           | KBDFans KBD75                  | 75%    | Hot-swap                  | Amplia comunidad                           |
+| Premium          | HHKB Professional              | 60%    | Topre                     | Sensación única                            |
+| Premium          | Realforce R2                   | TKL    | Topre                     | Alta duración y confort                    |
+| Budget           | Redragon K552                  | TKL    | Outemu                    | Económico                                  |
+| Budget           | Tecware Phantom                | TKL    | Gateron  
+
+RECUERDA PARA EL AGENTE
+
+Cuando el usuario pregunta por teclado mecánico, evaluar:
+
+✔ uso principal (gaming / trabajo / escritura)  
+✔ presupuesto del usuario  
+✔ tamaño del teclado (compacto vs completo)  
+✔ si quiere inalámbrico  
+✔ si le importa iluminación RGB  
+✔ si quiere hot-swap o custom
+
 ---
 
 ## 8. Cómo elegir el teclado adecuado (guía paso a paso)

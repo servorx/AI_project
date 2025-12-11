@@ -4,7 +4,35 @@ from fastapi import HTTPException
 from app.config import settings
 import google.api_core.exceptions as google_exceptions 
 
-BASE_URL = "https://generativeai.googleapis.com/v1"
+# funcion para poder extraer texto de la respuesta de Gemini y normalizar todas sus respuetas 
+def extract_text(data: dict) -> str:
+    # 1. modelos nuevos: "text"
+    if "text" in data and isinstance(data["text"], str):
+        return data["text"]
+
+    # 2. formato: "outputText"
+    if "outputText" in data:
+        return data["outputText"]
+
+    # 3. modelos clásicos con candidates
+    candidates = data.get("candidates", [])
+    if candidates:
+        cand = candidates[0]
+
+        # parts dentro de content
+        if "content" in cand and "parts" in cand["content"]:
+            return "".join(p.get("text", "") for p in cand["content"]["parts"])
+
+        # parts directos
+        if "parts" in cand:
+            return "".join(p.get("text", "") for p in cand["parts"])
+
+    # 4. formato: content -> parts
+    if "content" in data and "parts" in data["content"]:
+        return "".join(p.get("text", "") for p in data["content"]["parts"])
+
+    # 5. fallback final (por seguridad)
+    return ""
 
 class GeminiClient:
     def __init__(self, api_key: str = None, model: str = None, embedding_model: str = None):
@@ -15,44 +43,43 @@ class GeminiClient:
         self.embedding_model = embedding_model or settings.GEMINI_EMBEDDING_MODEL
         self._headers = {
             "Content-Type": "application/json",
+            "X-Goog-Api-Key": self.api_key,
         }
 
     async def generate_text(
         self, 
         prompt: str, 
-        max_tokens: int = 1024, 
-        temperature: float = 0.2) -> str:
+        max_tokens: int = 4096, 
+        temperature: float = 0.3):
 
-        try:
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/{self.model}:generateContent?key={self.api_key}"
-            payload = {
-                "contents": [
-                    {
-                        "parts": [
-                            {"text": prompt}
-                        ]
-                    }
-                ],
-                "generationConfig": {
-                    "maxOutputTokens": max_tokens,
-                    "temperature": temperature
+        url = (
+            f"https://generativelanguage.googleapis.com/v1beta/models/"
+            f"{self.model}:generateContent?key={self.api_key}"
+        )
+
+        payload = {
+            "contents": [
+                {
+                    "parts": [{"text": prompt}]
                 }
+            ],
+            "generationConfig": {
+                "maxOutputTokens": max_tokens,
+                "temperature": temperature
             }
+        }
+    
+        try:
             async with httpx.AsyncClient(timeout=30.0) as client:
                 resp = await client.post(url, headers=self._headers, json=payload)
                 resp.raise_for_status()
-                data = resp.json()
-        except httpx.HTTPStatusError as e:
-            raise RuntimeError(f"Gemini API returned {e.response.status_code}: {e.response.text}")
-        except Exception as e:
-            raise RuntimeError(f"Error calling Gemini: {str(e)}")
+                return extract_text(resp.json())
 
-        if "candidates" in data and len(data["candidates"]) > 0:
-            content = data["candidates"][0].get("content", {})
-            parts = content.get("parts", [])
-            text = "".join(p.get("text", "") for p in parts)
-            return text
-        return data.get("outputText") or data.get("text") or ""
+        except httpx.HTTPStatusError as e:
+            raise RuntimeError(
+                f"Gemini API returned {e.response.status_code}: {e.response.text}"
+            )
+
     # este metodo de la clase es para generar embeddings usando Gemini 
     async def embed_texts(self, texts: list[str]):
         if not isinstance(texts, list):

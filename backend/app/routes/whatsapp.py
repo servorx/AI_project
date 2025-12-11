@@ -7,6 +7,11 @@ from app.services.agent_service import CommercialAgentService
 from app.dependencies.db import get_db
 from sqlalchemy.orm import Session
 from app.models.db_models import Conversation, Message
+# para la parte de la actualización de datos del usuario
+import re
+import json
+from app.services.user_service import UserService
+import hashlib
 
 router = APIRouter()
 
@@ -15,7 +20,6 @@ router = APIRouter()
 def verify_token(request: Request):
     params = request.query_params
 
-    mode = params.get("hub.mode")
     challenge = params.get("hub.challenge")
     token = params.get("hub.verify_token")
 
@@ -24,43 +28,69 @@ def verify_token(request: Request):
     
     return JSONResponse({"error": "Invalid verify token"}, status_code=403)
 
-
 # POST receive messages
 @router.post("/webhook")
 async def receive_message(request: Request, db: Session = Depends(get_db)):
     body = await request.json()
     print("WA webhook body:", body)
 
+    # validar estructura del webhook
     try:
         entry = body["entry"][0]
         changes = entry["changes"][0]
         value = changes["value"]
-        messages = value.get("messages", [])
-        metadata = value.get("metadata", {})
     except:
         return JSONResponse({"status": "ignored"})
 
+    # IGNORAR EVENTOS DE ESTADO (sent/delivered/read)
+    if "statuses" in value:
+        return JSONResponse({"status": "ignored_status"})
+
+    messages = value.get("messages", [])
     if not messages:
         return JSONResponse({"status": "no_messages"})
 
     msg = messages[0]
+
+    #  IGNORAR MENSAJES QUE NO SEAN TEXT O INTERACTIVE
+    msg_type = msg.get("type")
+
+    if msg_type not in ("text", "interactive"):
+        return JSONResponse({"status": "ignored_non_text"})
+
     msg_id = msg.get("id")
     from_phone = msg.get("from")
 
-    # Evitar duplicados (muy importante)
+    # IGNORAR MENSAJES DEL PROPIO BOT
+    if from_phone == value["metadata"]["phone_number_id"]:
+        return JSONResponse({"status": "ignored_self"})
+
+    # PROTECCIÓN ANTI-DUPLICADOS (por ID)
     exists = db.query(Message).filter_by(external_id=msg_id).first()
     if exists:
         return JSONResponse({"status": "duplicate_ignored"})
 
+    # 6. EXTRAER CONTENIDO DEL MENSAJE
     text = ""
-    if msg.get("text"):
+    if msg_type == "text":
         text = msg["text"]["body"]
-    elif msg.get("type") == "interactive":
+    elif msg_type == "interactive":
         interactive = msg["interactive"]
         if interactive["type"] == "button_reply":
             text = interactive["button_reply"].get("title")
 
-    # Crear conversación si no existe
+    # HASH ANTI-DUPLICADOS (por contenido exacto)
+    content_hash = hashlib.md5(text.encode()).hexdigest()
+
+    dupe_text = db.query(Message).filter_by(
+        conversation_id=from_phone,
+        content_hash=content_hash
+    ).first()
+
+    if dupe_text:
+        return JSONResponse({"status": "duplicate_text"})
+
+    # CREAR O OBTENER CONVERSACIÓN
     session_id = from_phone
 
     conv = db.query(Conversation).filter_by(session_id=session_id).first()
@@ -70,24 +100,102 @@ async def receive_message(request: Request, db: Session = Depends(get_db)):
         db.commit()
         db.refresh(conv)
 
-    # Guardar mensaje del usuario
+    # 9. GUARDAR MENSAJE DEL USUARIO
     user_msg = Message(
         conversation_id=conv.id,
         role="user",
         content=text,
-        external_id=msg_id
+        external_id=msg_id,
+        content_hash=content_hash
     )
     db.add(user_msg)
     db.commit()
 
-    # Llamar agente
+    # ---------------------------------------------------------
+    # 10. LLAMAR AL AGENTE
+    # ---------------------------------------------------------
     agent_service = CommercialAgentService(session_id=session_id)
     try:
         resp_text = await agent_service.answer(text)
-    except:
-        resp_text = "Lo siento, ocurrió un error procesando tu mensaje."
+    except Exception as e:
+        print("ERROR EN AGENTE WHATSAPP:", e)
+        raise e
 
-    # Guardar respuesta del asistente
+    # ---------------------------------------------------------
+    # 11. DETECTAR <ACTION> (UPDATE PROFILE)
+    # ---------------------------------------------------------
+    pattern = r"<ACTION>(.*?)</ACTION>"
+    match = re.search(pattern, resp_text, re.DOTALL)
+
+    if match:
+        try:
+            action_json = match.group(1).strip()
+            data = json.loads(action_json)
+
+            # proceso de intencion de actualización de perfil
+            if data.get("intent") == "update_profile":
+                UserService.update_profile(db, from_phone, data.get("data", {}))
+
+                clean_response = (
+                    "¡Gracias por brindarme esta información! 😊 "
+                    "Ahora puedo ayudarte mucho mejor. "
+                    "¿Qué tipo de teclado mecánico estás buscando?"
+                )
+
+                # Guardar mensaje limpio del asistente
+                assistant_msg = Message(
+                    conversation_id=conv.id,
+                    role="assistant",
+                    content=clean_response
+                )
+                db.add(assistant_msg)
+                db.commit()
+
+                wa = WhatsAppService()
+                await wa.send_text(to_phone=from_phone, text=clean_response)
+
+                return {"status": "ok"}
+            # proceso de intencion de compra de teclado
+            if data.get("intent") == "purchase_recommendation":
+                product = data.get("data", {})
+
+                # Validar campos mínimos para seguridad
+                required = ["model", "brand", "switch", "price", "url"]
+                if not all(key in product for key in required):
+                    print("ACTION purchase_recommendation incompleto:", product)
+                    return {"status": "invalid_purchase_action"}
+
+                # Construir mensaje limpio para el usuario
+                clean_response = (
+                    f"¡Excelente elección! 🎉\n\n"
+                    f"Aquí tienes la información del teclado que seleccionaste:\n\n"
+                    f"🛒 *{product['model']}* ({product['brand']})\n"
+                    f"🔧 Switch: {product['switch']}\n"
+                    f"💵 Precio: {product['price']}\n\n"
+                    f"Puedes comprarlo aquí:\n{product['url']}"
+                )
+
+                # Guardar mensaje del asistente en BD
+                assistant_msg = Message(
+                    conversation_id=conv.id,
+                    role="assistant",
+                    content=clean_response
+                )
+                db.add(assistant_msg)
+                db.commit()
+
+                # Enviar por WhatsApp
+                wa = WhatsAppService()
+                await wa.send_text(to_phone=from_phone, text=clean_response)
+
+                return {"status": "ok"}
+
+        except Exception as e:
+            print("ERROR PARSEANDO ACTION:", e)
+
+    # ---------------------------------------------------------
+    # 12. RESPUESTA NORMAL DEL AGENTE
+    # ---------------------------------------------------------
     assistant_msg = Message(
         conversation_id=conv.id,
         role="assistant",
@@ -96,7 +204,6 @@ async def receive_message(request: Request, db: Session = Depends(get_db)):
     db.add(assistant_msg)
     db.commit()
 
-    # Enviar WhatsApp
     wa = WhatsAppService()
     await wa.send_text(to_phone=from_phone, text=resp_text)
 

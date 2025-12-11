@@ -1,13 +1,14 @@
 import { useEffect, useRef, useState } from "react";
-import ChatBubble from "../components/ChatBubble";
+import ChatBubble from "../components/chat/ChatBubble";
 import { timeNowISO } from "../utils/Time";
 import { postChatMessage } from "../api/api";
 import { AnimatePresence, motion } from "framer-motion";
-import Sidebar from "../components/Sidebar";
-import InputChat from "../components/InputChat";
+import ChatSidebar from "../components/chat/ChatSidebar";
+import InputChat from "../components/chat/InputChat";
 import type { Message } from "../types/Message";
 // generar id aleatorio para una sesion de chat web
 import { v4 as uuid } from "uuid";
+import ChatHeader from "../components/chat/ChatHeader";
 
 export default function ChatLayout() {
   const [messages, setMessages] = useState<Message[]>([
@@ -23,12 +24,13 @@ export default function ChatLayout() {
   const [loading, setLoading] = useState(false);
 
   const scrollerRef = useRef<HTMLDivElement | null>(null);
+  const bottomRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    scrollerRef.current?.scrollTo({
-      top: scrollerRef.current.scrollHeight,
-      behavior: "smooth",
-    });
+    const timeout = setTimeout(() => {
+      bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, 10);
+    return () => clearTimeout(timeout);
   }, [messages]);
 
   async function sendMessage() {
@@ -73,27 +75,14 @@ export default function ChatLayout() {
 
   return (
     <div className="flex-1 flex flex-col h-full bg-background text-text-primary">
-
       {/* HEADER */}
-      <motion.div
-        initial={{ y: -12, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        className="px-6 py-4 border-b border-border bg-surface"
-      >
-        <h2 className="text-lg font-semibold text-text-primary">
-          Chat con el Asistente
-        </h2>
-        <p className="text-sm text-text-secondary">
-          Sesión: <span className="font-mono">{sessionId}</span>
-        </p>
-      </motion.div>
-
-      {/* CONTENEDOR GENERAL (Chat + Sidebar) */}
-      <div className="flex flex-1 overflow-hidden">
+      <ChatHeader/>
+      {/* CONTENEDOR GENERAL (Chat + ChatSidebar) */}
+      <div className="flex flex-2 overflow-hidden">
         {/* CHAT */}
         <div
           ref={scrollerRef}
-          className="flex-1 overflow-auto p-6 space-y-4 bg-background"
+          className="flex-1 overflow-y-auto px-6 pt-6 space-y-4 bg-background"
         >
           <AnimatePresence mode="popLayout">
             {messages.map((m, i) => (
@@ -101,28 +90,29 @@ export default function ChatLayout() {
             ))}
           </AnimatePresence>
 
+          <div ref={bottomRef} />
           {loading && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="text-secondary text-sm"
+              className="text-secondary text-sm pb-3"
             >
               El asistente está escribiendo…
             </motion.div>
           )}
         </div>
 
-        {/* SIDEBAR */}
-        <Sidebar />
+        {/* ChatSidebar */}
+        <ChatSidebar />
       </div>
-
-      {/* INPUTCHAT COMPONENT */}
-      <InputChat
-        input={input}
-        setInput={setInput}
-        loading={loading}
-        onSend={sendMessage}
-      />
+      <div className="sticky bottom-0 left-0 right-0 bg-surface z-50">
+        <InputChat
+          input={input}
+          setInput={setInput}
+          loading={loading}
+          onSend={sendMessage}
+        />
+      </div>
     </div>
   );
 }

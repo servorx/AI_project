@@ -10,8 +10,14 @@ export default function App() {
   const [page, setPage] = useState("chat");
 
   return (
-    <div className="h-screen flex flex-col bg-background">
-      <NavBar page={page} setPage={setPage} />
+    <div className="h-screen flex flex-col bg-background overflow-hidden">
+
+      {/* Navbar directamente, con sticky aplicado aquí */}
+      <NavBar
+        page={page}
+        setPage={setPage}
+        className="sticky top-0 z-50 bg-surface border-b border-border"
+      />
 
       <AnimatePresence mode="wait">
         {page === "chat" ? (

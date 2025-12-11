@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException
 # arreglar CORS
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from app.routes import chat, whatsapp, admin, recommendation
+from app.routes import chat, whatsapp, admin, recommendation, user, message
 from app.config import settings
 from app.dependencies.db import create_tables
 
@@ -16,6 +16,8 @@ app.include_router(chat.router, prefix="/chat", tags=["chat"])
 app.include_router(whatsapp.router, prefix="/whatsapp", tags=["whatsapp"])
 app.include_router(admin.router, prefix="/admin", tags=["admin"])
 app.include_router(recommendation.router, prefix="/recommendations", tags=["recommendations"])
+app.include_router(user.router, prefix="/users", tags=["users"])
+app.include_router(message.router, prefix="/messages", tags=["messages"])
 
 # middleware basico 
 @app.exception_handler(Exception)

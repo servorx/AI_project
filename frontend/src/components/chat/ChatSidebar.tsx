@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { getRecommendations } from "../api/api";
-import type { Product } from "../types/Product";
-import type { Guide } from "../types/Guide";
+import { getRecommendations } from "../../api/api_recomendations";
+import type { Product } from "../../types/Product";
+import type { Guide } from "../../types/Guide";
 
-export default function Sidebar() {
+export default function ChatSidebar() {
   const [products, setProducts] = useState<Product[]>([]);
   const [guides, setGuides] = useState<Guide[]>([]);
   const [loading, setLoading] = useState(true);
@@ -24,7 +24,7 @@ export default function Sidebar() {
 
   return (
     <aside
-      className="w-[30%] bg-surface border-l border-border p-4 hidden lg:flex flex-col overflow-y-auto"
+      className="w-2/6 bg-surface border-l border-border p-4 hidden lg:flex flex-col overflow-y-auto"
     >
     <h2 className="text-lg font-semibold text-text-primary mb-4">
       Recomendaciones
@@ -62,9 +62,14 @@ export default function Sidebar() {
               <span className="text-secondary font-semibold">
                 ${p.price}
               </span>
-              <span className="text-primary">
-                {p.switch}
-              </span>
+              <div>
+                <span className="text-text-primary mr-1">
+                  switch: 
+                </span>
+                <span className="text-primary">
+                  {p.switch}
+                </span>
+              </div>
             </div>
           </motion.div>
         ))}

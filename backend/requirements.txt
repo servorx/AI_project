@@ -1,10 +1,10 @@
 # Langchain
 # TODO: revisar y evaluar si todas las dependencias son necesarias
-langchain-google-genai
+# langchain-google-genai
 langgraph-cli[inmem]
-langchain
+# langchain
 langgraph
-langroid
+# langroid
 
 # FastAPI backend
 fastapi
